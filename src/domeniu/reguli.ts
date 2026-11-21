@@ -4,8 +4,11 @@
 // Un pas care depinde de un calcul are doua forme:
 //  - "calculata": calculul s-a putut face si a declansat pasul;
 //  - "generala":  calculul nu s-a putut face (suma nespusa, lipsa cursuri,
-//                 plafon neverificat), iar pasul apare fara sume.
+//                 plafon neverificat, parametri nedecisi), iar pasul apare fara sume.
 // Aplicatia nu ascunde un pas doar pentru ca nu il poate calcula.
+//
+// Parametrii sunt decizii ale proprietarului. Cat timp lipsesc (null), sunt
+// tratati ca o suma nespusa: aplicatia nu pune praguri in locul lui.
 
 import {
   TIPURI_IN_TOTAL,
@@ -44,27 +47,30 @@ export function plafonulEsteVechi(plafonVerificatLa: string, azi: string): boole
   return azi > limita;
 }
 
-function baniPentruUrgente(r: Raspunsuri, cursuri: Cursuri | null, p: Parametri): Forma {
+function baniPentruUrgente(r: Raspunsuri, cursuri: Cursuri | null, p: Parametri | null): Forma {
+  if (p === null) return "generala";
   const accesibili = baniAccesibili(r.locuri, cursuri);
   const rezerva = rezervaTinta(r.cheltuieli, p.luniRezerva, cursuri);
   if (accesibili.fel === "lipsa" || rezerva.fel === "lipsa") return "generala";
   return accesibili.lei < rezerva.lei ? "calculata" : null;
 }
 
-function baniInCasa(r: Raspunsuri, cursuri: Cursuri | null, p: Parametri): Forma {
+function baniInCasa(r: Raspunsuri, cursuri: Cursuri | null, p: Parametri | null): Forma {
+  // Fara niciun rand "Acasa", niciun prag nu ar putea declansa pasul.
+  if (!r.locuri.some((rand) => rand.tip === "acasa")) return null;
   // Lipsa apare doar daca exista un rand "Acasa" a carui suma nu poate fi socotita.
   const acasa = numerarAcasa(r.locuri, cursuri);
-  if (acasa.fel === "lipsa") return "generala";
+  if (acasa.fel === "lipsa" || p === null) return "generala";
   return acasa.lei > p.pragNumerarAcasaLei ? "calculata" : null;
 }
 
-function oSinguraBanca(r: Raspunsuri, cursuri: Cursuri | null, p: Parametri, azi: string): Forma {
+function oSinguraBanca(r: Raspunsuri, cursuri: Cursuri | null, p: Parametri | null, azi: string): Forma {
   const banci = sumePeBanci(r.locuri, cursuri);
   if (banci.length === 0) return null;
 
   // Pragul in lei nu se poate calcula fara cursul euro sau cu un plafon neverificat la timp.
   const pragLei =
-    cursuri === null || plafonulEsteVechi(p.plafonVerificatLa, azi)
+    cursuri === null || p === null || plafonulEsteVechi(p.plafonVerificatLa, azi)
       ? null
       : (p.plafonGarantareEur - p.marjaPlafonEur) * cursuri.leiPe.EUR;
 
@@ -77,9 +83,10 @@ function oSinguraBanca(r: Raspunsuri, cursuri: Cursuri | null, p: Parametri, azi
   return necunoscut && banci.length === 1 ? "generala" : null;
 }
 
-function baniPesteRezervaForma(r: Raspunsuri, cursuri: Cursuri | null, p: Parametri): Forma {
+function baniPesteRezervaForma(r: Raspunsuri, cursuri: Cursuri | null, p: Parametri | null): Forma {
   // Fara niciun rand care intra in total nu exista "bani peste rezerva", nici in forma generala.
   if (!r.locuri.some((rand) => TIPURI_IN_TOTAL.includes(rand.tip))) return null;
+  if (p === null) return "generala";
   const peste = baniPesteRezerva(r, p.luniRezerva, cursuri);
   if (peste.fel === "lipsa") return "generala";
   return peste.lei > 0 ? "calculata" : null;
@@ -96,7 +103,7 @@ const simplu = (conditie: boolean): Forma => (conditie ? "calculata" : null);
  * Lista goala inseamna ca din raspunsuri nu a reiesit niciun pas; nu inseamna ca "totul este in ordine".
  * Datoriile la banca si catre persoane nu produc niciun pas in prima versiune.
  */
-export function calculeazaPasi(r: Raspunsuri, cursuri: Cursuri | null, p: Parametri, azi: string): readonly Pas[] {
+export function calculeazaPasi(r: Raspunsuri, cursuri: Cursuri | null, p: Parametri | null, azi: string): readonly Pas[] {
   const forme: Record<IdPas, Forma> = {
     frauda: simplu(r.contactSuspect),
     "luna-nu-se-inchide": simplu(r.ramanBani === "nu-se-termina" || r.ramanBani === "nu-ajung"),

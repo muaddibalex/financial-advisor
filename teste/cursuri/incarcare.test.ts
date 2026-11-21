@@ -1,5 +1,5 @@
-import { describe, expect, test } from "vitest";
-import { incarcaCursuri, valideazaCursuri, type PastrareCursuri } from "../../src/cursuri/incarcare";
+import { describe, expect, test, vi } from "vitest";
+import { TIMP_MAXIM_MS, incarcaCursuri, valideazaCursuri, type PastrareCursuri } from "../../src/cursuri/incarcare";
 import type { Cursuri } from "../../src/domeniu/tipuri";
 
 const octombrie: Cursuri = { lunaReferinta: "2026-10", generatLa: "2026-11-02", leiPe: { EUR: 5, USD: 4, GBP: 6 } };
@@ -111,6 +111,28 @@ describe("incarcaCursuri", () => {
     };
     const rezultat = await incarcaCursuri(ADRESA, stricata, raspunde(JSON.stringify(octombrie)));
     expect(rezultat).toEqual({ sursa: "retea", cursuri: octombrie });
+  });
+
+  describe("o cerere care nu mai raspunde", () => {
+    /** Ca o retea agatata: raspunsul nu vine niciodata, dar cererea poate fi oprita. */
+    const agatat = (_adresa: string, optiuni?: RequestInit) =>
+      new Promise<Response>((_resolve, reject) => {
+        optiuni?.signal?.addEventListener("abort", () => reject(new DOMException("oprit", "AbortError")));
+      });
+
+    test.each([
+      ["cu copie: foloseste copia", septembrie, { sursa: "copie", cursuri: septembrie }],
+      ["fara copie: lipsa", null, { sursa: "lipsa", cursuri: null }],
+    ])("%s", async (_nume, copie, asteptat) => {
+      vi.useFakeTimers();
+      try {
+        const rezultat = incarcaCursuri(ADRESA, pastrare(copie), agatat);
+        await vi.advanceTimersByTimeAsync(TIMP_MAXIM_MS);
+        expect(await rezultat).toEqual(asteptat);
+      } finally {
+        vi.useRealTimers();
+      }
+    });
   });
 
   test("fisierul real din public/ are forma asteptata", async () => {

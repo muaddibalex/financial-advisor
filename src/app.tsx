@@ -1,25 +1,37 @@
 import { useEffect, useRef, useState } from "preact/hooks";
 import { BANCI } from "./continut/banci";
 import { INTREBARI, type Intrebare } from "./continut/intrebari";
+import { PARAMETRI } from "./continut/parametri";
+import { CONTINUT_IN_CIORNA } from "./continut/pasi";
 import { incarcaCursuri, type RezultatCursuri } from "./cursuri/incarcare";
-import type { Cursuri, Raspunsuri } from "./domeniu/tipuri";
+import type { Cursuri, IdPas, Parametri, Raspunsuri } from "./domeniu/tipuri";
+import { DetaliuPas } from "./ecrane/DetaliuPas";
 import { EcranAlegere, EcranCheltuialaMare, EcranDaNu, EcranDatorii, EcranSuma, type Navigare } from "./ecrane/Intrebare";
 import { ListaLocuri } from "./ecrane/ListaLocuri";
+import { Plan } from "./ecrane/Plan";
+import { Siguranta, StergeTot, Subsol } from "./ecrane/Siguranta";
+import { cifrelePasului, construiestePlan } from "./plan/plan";
 import { creeazaStocare, type Stocare } from "./stocare/stocare";
-import { STARE_GOALA, type RaspunsuriPartiale, type StareSalvata } from "./stocare/validare";
+import { STARE_GOALA, esteComplet, type RaspunsuriPartiale, type StareSalvata } from "./stocare/validare";
 
 type Proprietati = {
   readonly stocare?: Stocare;
   readonly incarca?: (stocare: Stocare) => Promise<RezultatCursuri>;
   /** Data de azi, AAAA-LL-ZZ. */
   readonly azi?: string;
+  /** Parametrii proprietarului. null cat timp nu au fost decisi. */
+  readonly parametri?: Parametri | null;
+  readonly tipareste?: () => void;
 };
 
 type Ecran =
   /** Datele salvate nu pot fi folosite. Nimic nu se suprascrie pana cand omul nu este de acord. */
   | { readonly fel: "date-necitite" }
   | { readonly fel: "intrebare"; readonly index: number }
-  | { readonly fel: "gata" };
+  | { readonly fel: "plan" }
+  | { readonly fel: "pas"; readonly id: IdPas }
+  /** Dupa "Stergeti tot". Nimic nu se salveaza pana la primul raspuns nou. */
+  | { readonly fel: "sters" };
 
 /** Data de azi in Romania, oriunde s-ar afla telefonul. */
 export function aziInRomania(acum: Date = new Date()): string {
@@ -34,12 +46,20 @@ function ecranDePornire({ raspunsuri, laIntrebarea }: StareSalvata): Ecran {
   // Dupa o intrerupere, omul reia de la intrebarea la care a ramas.
   if (laIntrebarea !== null && laIntrebarea < INTREBARI.length) return { fel: "intrebare", index: laIntrebarea };
   const index = primaFaraRaspuns(raspunsuri);
-  return index === -1 ? { fel: "gata" } : { fel: "intrebare", index };
+  return index === -1 ? { fel: "plan" } : { fel: "intrebare", index };
 }
 
 const incarcaDinRetea = (stocare: Stocare) => incarcaCursuri("./cursuri.json", stocare.cursuri);
 
-export function App({ stocare: stocareData, incarca = incarcaDinRetea, azi = aziInRomania() }: Proprietati) {
+const tiparesteDinBrowser = () => window.print();
+
+export function App({
+  stocare: stocareData,
+  incarca = incarcaDinRetea,
+  azi = aziInRomania(),
+  parametri = PARAMETRI,
+  tipareste = tiparesteDinBrowser,
+}: Proprietati) {
   const [stocare] = useState(() => stocareData ?? creeazaStocare());
   const [citit] = useState(() => stocare.citeste());
   const [stare, setStare] = useState<StareSalvata>(citit.fel === "valida" ? citit.stare : STARE_GOALA);
@@ -47,6 +67,9 @@ export function App({ stocare: stocareData, incarca = incarcaDinRetea, azi = azi
     citit.fel === "versiune-veche" || citit.fel === "stricata" ? { fel: "date-necitite" } : ecranDePornire(stare),
   );
   const [salvareEsuata, setSalvareEsuata] = useState(false);
+  // Ecranele "Siguranta" si "Stergeti tot" se deschid peste ecranul curent, care ramane
+  // neatins dedesubt: un loc pe jumatate completat nu se pierde.
+  const [suprapus, setSuprapus] = useState<"siguranta" | "sterge" | null>(null);
   // undefined: cursurile inca se incarca. null: nu exista nici in retea, nici in copie.
   const [cursuri, setCursuri] = useState<Cursuri | null | undefined>(undefined);
 
@@ -91,19 +114,42 @@ export function App({ stocare: stocareData, incarca = incarcaDinRetea, azi = azi
       ? "Ultimul răspuns nu a putut fi salvat pe telefon. Dacă închideți pagina, se poate pierde."
       : null;
 
-  const cuAvertizare = (continut: preact.ComponentChildren) => (
+  const bifeaza = (id: IdPas, facut: boolean) => {
+    const faraEl = ultima.current.pasiFacuti.filter((p) => p !== id);
+    const noua: StareSalvata = { ...ultima.current, pasiFacuti: facut ? [...faraEl, id] : faraEl };
+    ultima.current = noua;
+    setStare(noua);
+    setSalvareEsuata(!stocare.salveaza(noua));
+  };
+
+  const stergeTot = () => {
+    stocare.stergeTot();
+    // Starea din memorie se goleste si nu se salveaza: pe telefon nu ramane nimic.
+    ultima.current = STARE_GOALA;
+    setStare(STARE_GOALA);
+    setSalvareEsuata(false);
+    setEcran({ fel: "sters" });
+    setSuprapus(null);
+  };
+
+  const cuAvertizare = (continut: preact.ComponentChildren, areAvertizare = true) => (
     <>
-      {avertizare ? (
-        <p class="avertizare-salvare" role="status">
+      {areAvertizare && avertizare ? (
+        <p class="avertizare-salvare fara-tipar" role="status">
           {avertizare}
         </p>
       ) : null}
-      {continut}
+      <div class="strat" hidden={suprapus !== null}>
+        {continut}
+      </div>
+      {suprapus === "siguranta" ? <Siguranta onInapoi={() => setSuprapus(null)} /> : null}
+      {suprapus === "sterge" ? <StergeTot onSterge={stergeTot} onRenunta={() => setSuprapus(null)} /> : null}
+      {suprapus === null ? <Subsol onSiguranta={() => setSuprapus("siguranta")} onSterge={() => setSuprapus("sterge")} /> : null}
     </>
   );
 
   if (ecran.fel === "date-necitite") {
-    return (
+    return cuAvertizare(
       <main class="ecran">
         <h1>Răspunsurile salvate nu mai pot fi citite</h1>
         <p>
@@ -117,20 +163,71 @@ export function App({ stocare: stocareData, incarca = incarcaDinRetea, azi = azi
         <button type="button" class="buton principal" onClick={() => setEcran({ fel: "intrebare", index: 0 })}>
           Reluați întrebările
         </button>
-      </main>
+      </main>,
+      false,
     );
   }
 
-  if (ecran.fel === "gata") {
+  if (ecran.fel === "sters") {
     return cuAvertizare(
       <main class="ecran">
-        <h1>Ați răspuns la toate întrebările</h1>
-        <p>Planul dumneavoastră va apărea aici. Această parte a aplicației este încă în lucru.</p>
+        <h1>Totul a fost șters</h1>
+        <p>Pe acest telefon nu a mai rămas niciun răspuns.</p>
         <div class="spatiu" />
-        <button type="button" class="buton" onClick={() => mergiLa({ fel: "intrebare", index: 0 })}>
-          Schimbați răspunsurile
+        <button type="button" class="buton principal" onClick={() => setEcran({ fel: "intrebare", index: 0 })}>
+          Începeți din nou
         </button>
       </main>,
+      false,
+    );
+  }
+
+  if (ecran.fel === "plan" || ecran.fel === "pas") {
+    const { raspunsuri } = stare;
+    if (!esteComplet(raspunsuri)) {
+      // Nu ar trebui sa se intample; daca se intampla, omul ajunge la intrebarea ramasa fara raspuns.
+      const prima = primaFaraRaspuns(raspunsuri);
+      return cuAvertizare(
+        <main class="ecran">
+          <h1>Mai este o întrebare fără răspuns</h1>
+          <div class="spatiu" />
+          <button type="button" class="buton principal" onClick={() => mergiLa({ fel: "intrebare", index: Math.max(prima, 0) })}>
+            Mergeți la întrebare
+          </button>
+        </main>,
+      );
+    }
+    // Planul nu se socoteste cat timp cursurile se incarca: altfel ar aparea, pentru o clipa, fara ele.
+    if (cursuri === undefined) {
+      return cuAvertizare(
+        <main class="ecran">
+          <h1>Se pregătește planul…</h1>
+        </main>,
+      );
+    }
+    const plan = construiestePlan(raspunsuri, cursuri, parametri, azi, stare.pasiFacuti);
+    const pas = ecran.fel === "pas" ? plan.pasi.find((p) => p.id === ecran.id) : undefined;
+    if (pas !== undefined) {
+      return cuAvertizare(
+        <DetaliuPas
+          key={pas.id}
+          pas={pas}
+          cifre={cifrelePasului(pas, raspunsuri, cursuri, parametri)}
+          onInapoi={() => setEcran({ fel: "plan" })}
+          onBifeaza={(facut) => bifeaza(pas.id, facut)}
+        />,
+      );
+    }
+    return cuAvertizare(
+      <Plan
+        plan={plan}
+        cursuri={cursuri}
+        azi={azi}
+        inCiorna={CONTINUT_IN_CIORNA}
+        onDeschide={(id) => setEcran({ fel: "pas", id })}
+        onSchimba={() => mergiLa({ fel: "intrebare", index: 0 })}
+        onTipareste={tipareste}
+      />,
     );
   }
 
@@ -145,7 +242,7 @@ export function App({ stocare: stocareData, incarca = incarcaDinRetea, azi = azi
       if (index + 1 < INTREBARI.length) return mergiLa({ fel: "intrebare", index: index + 1 });
       // Dupa ultima intrebare: la plan, sau inapoi la prima ramasa fara raspuns.
       const prima = primaFaraRaspuns(ultima.current.raspunsuri);
-      mergiLa(prima === -1 ? { fel: "gata" } : { fel: "intrebare", index: prima });
+      mergiLa(prima === -1 ? { fel: "plan" } : { fel: "intrebare", index: prima });
     },
   };
 

@@ -54,11 +54,45 @@ export type Situatie = {
   readonly cursuri?: Cursuri | null;
   /** Implicit AZI. */
   readonly azi?: string;
+  /** Implicit parametriTest. null inseamna ca proprietarul nu a decis inca parametrii. */
+  readonly parametri?: null;
   /** Pasii asteptati, in ordine. Forma generala se scrie "id:generala". */
   readonly asteptat: readonly string[];
 };
 
 export const situatii: readonly Situatie[] = [
+  // --- Parametri nedecisi: pasii care depind de ei apar in forma generala, fara praguri inventate ---
+  {
+    nume: "fara parametri: situatia de baza - urgente, o banca si bani peste rezerva, toate in forma generala",
+    raspunsuri: baza,
+    parametri: null,
+    asteptat: ["bani-pentru-urgente:generala", "o-singura-banca:generala", "bani-peste-rezerva:generala"],
+  },
+  {
+    nume: "fara parametri: numerar acasa - si pasul despre banii din casa, in forma generala",
+    raspunsuri: { ...baza, locuri: [{ tip: "acasa", suma: suma(100) }] },
+    parametri: null,
+    asteptat: ["bani-pentru-urgente:generala", "bani-in-casa:generala", "bani-peste-rezerva:generala"],
+  },
+  {
+    nume: "fara parametri: doua banci - pasul despre o singura banca nu apare",
+    raspunsuri: { ...baza, locuri: [{ tip: "cont", suma: suma(10000), banca: bancaA }, { tip: "cont", suma: suma(10000), banca: bancaB }] },
+    parametri: null,
+    asteptat: ["bani-pentru-urgente:generala", "bani-peste-rezerva:generala"],
+  },
+  {
+    nume: "fara parametri: niciun loc - ramane doar pasul despre urgente",
+    raspunsuri: { ...baza, locuri: [] },
+    parametri: null,
+    asteptat: ["bani-pentru-urgente:generala"],
+  },
+  {
+    nume: "fara parametri: pasii care nu depind de ei raman neschimbati",
+    raspunsuri: { ...baza, locuri: [], contactSuspect: true, girant: true },
+    parametri: null,
+    asteptat: ["frauda", "bani-pentru-urgente:generala", "girant"],
+  },
+
   // --- Lista goala ---
   { nume: "situatia de baza nu produce niciun pas", raspunsuri: baza, asteptat: [] },
 

@@ -8,7 +8,8 @@ const scurt = (pas: Pas): string => (pas.forma === "generala" ? `${pas.id}:gener
 describe("tabelul de situatii", () => {
   test.each(situatii.map((s) => [s.nume, s] as const))("%s", (_nume, s) => {
     const cursuri = s.cursuri === undefined ? cursuriTest : s.cursuri;
-    const pasi = calculeazaPasi(s.raspunsuri, cursuri, parametriTest, s.azi ?? AZI);
+    const parametri = s.parametri === undefined ? parametriTest : s.parametri;
+    const pasi = calculeazaPasi(s.raspunsuri, cursuri, parametri, s.azi ?? AZI);
     expect(pasi.map(scurt)).toEqual(s.asteptat);
   });
 });

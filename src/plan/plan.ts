@@ -1,0 +1,94 @@
+// Planul afisat omului: pasii motorului de reguli, in ordinea lui, impreuna cu
+// bifele si cu starea cursului valutar. Functii pure.
+
+import { formateazaSuma } from "../chestionar/suma";
+import { stareCursuri } from "../cursuri/vechime";
+import { baniAccesibili, numerarAcasa, rezervaTinta } from "../domeniu/marimi";
+import { calculeazaPasi } from "../domeniu/reguli";
+import type { Cursuri, IdPas, Parametri, Pas, Raspunsuri } from "../domeniu/tipuri";
+
+export type PasInPlan = Pas & {
+  readonly facut: boolean;
+  /** Numarul din lista. Avertizarea de frauda nu are numar: sta deasupra, marcata distinct. */
+  readonly numar: number | null;
+};
+
+/**
+ * Starea cursului valutar, daca planul a avut nevoie de el:
+ * "nu-trebuie" cand niciun calcul nu a folosit cursul.
+ */
+export type StareCurs = "nu-trebuie" | "proaspat" | "vechi" | "lipsa";
+
+export type Plan = {
+  readonly pasi: readonly PasInPlan[];
+  /** Cati pasi nu sunt bifati. */
+  readonly ramase: number;
+  readonly curs: StareCurs;
+};
+
+/** Pasul de frauda nu poate fi bifat: o avertizare stearsa nu mai avertizeaza. */
+export function sePoateBifa(id: IdPas): boolean {
+  return id !== "frauda";
+}
+
+function cursulEsteNecesar(r: Raspunsuri, parametri: Parametri | null): boolean {
+  const areValuta = r.locuri.some((rand) => rand.tip !== "aur" && rand.suma.fel === "suma" && rand.suma.moneda !== "RON");
+  // Pragul pentru o singura banca se socoteste in euro, chiar daca toate economiile sunt in lei.
+  const areBanca = r.locuri.some((rand) => rand.tip === "cont" || rand.tip === "depozit");
+  return areValuta || (areBanca && parametri !== null);
+}
+
+export function construiestePlan(
+  r: Raspunsuri,
+  cursuri: Cursuri | null,
+  parametri: Parametri | null,
+  azi: string,
+  pasiFacuti: readonly IdPas[],
+): Plan {
+  let numar = 0;
+  // Ordinea este cea a motorului de reguli si nu se schimba aici.
+  const pasi = calculeazaPasi(r, cursuri, parametri, azi).map((pas): PasInPlan => {
+    const facut = sePoateBifa(pas.id) && pasiFacuti.includes(pas.id);
+    return { ...pas, facut, numar: pas.id === "frauda" ? null : ++numar };
+  });
+
+  const curs: StareCurs = !cursulEsteNecesar(r, parametri)
+    ? "nu-trebuie"
+    : cursuri === null
+      ? "lipsa"
+      : stareCursuri(cursuri.lunaReferinta, azi);
+
+  return { pasi, ramase: pasi.filter((p) => !p.facut).length, curs };
+}
+
+/**
+ * Cifrele din raspunsurile omului care au dus la un pas calculat.
+ * Doar pentru pasii 4 si 6. Pasul despre o singura banca nu arata nimic legat de
+ * plafon, iar cel despre banii peste rezerva nu arata nicio suma: o suma langa
+ * "depozit" sau "titlu de stat" ar putea fi citita drept "atat sa puneti".
+ */
+export function cifrelePasului(pas: Pas, r: Raspunsuri, cursuri: Cursuri | null, parametri: Parametri | null): readonly string[] {
+  if (pas.forma !== "calculata" || parametri === null) return [];
+  const aproximativ = (lei: number) => `aproximativ ${formateazaSuma(Math.round(lei), "RON")}`;
+
+  if (pas.id === "bani-pentru-urgente") {
+    const accesibili = baniAccesibili(r.locuri, cursuri);
+    const rezerva = rezervaTinta(r.cheltuieli, parametri.luniRezerva, cursuri);
+    if (accesibili.fel === "lipsa" || rezerva.fel === "lipsa") return [];
+    return [
+      `Bani la îndemână, acasă și în cont: ${aproximativ(accesibili.lei)}.`,
+      `Cheltuielile dumneavoastră pe ${parametri.luniRezerva} luni: ${aproximativ(rezerva.lei)}.`,
+    ];
+  }
+  if (pas.id === "bani-in-casa") {
+    const acasa = numerarAcasa(r.locuri, cursuri);
+    return acasa.fel === "lipsa" ? [] : [`Bani ținuți în casă: ${aproximativ(acasa.lei)}.`];
+  }
+  return [];
+}
+
+/** "2026-11-21" -> "21.11.2026". */
+export function dataRomaneasca(azi: string): string {
+  const [an, luna, zi] = azi.split("-");
+  return `${zi}.${luna}.${an}`;
+}

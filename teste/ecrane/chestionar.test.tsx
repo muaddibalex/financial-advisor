@@ -19,7 +19,7 @@ function porneste(optiuni: { stare?: StareSalvata; cursuri?: Cursuri | null; dep
   const cursuri = optiuni.cursuri === undefined ? cursuriTest : optiuni.cursuri;
   const rezultat: RezultatCursuri = cursuri ? { sursa: "retea", cursuri } : { sursa: "lipsa", cursuri: null };
   const incarca = () => (optiuni.seIncarca ? new Promise<RezultatCursuri>(() => {}) : Promise.resolve(rezultat));
-  render(<App stocare={stocare} incarca={incarca} azi={AZI} />);
+  render(<App stocare={stocare} incarca={incarca} azi={AZI} parametri={parametriTest} />);
   return stocare;
 }
 
@@ -27,6 +27,8 @@ const cu = (raspunsuri: RaspunsuriPartiale): StareSalvata => ({ raspunsuri, pasi
 const apasa = (nume: string | RegExp) => fireEvent.click(screen.getByRole("button", { name: nume }));
 const scrie = (eticheta: string | RegExp, text: string) => fireEvent.input(screen.getByLabelText(eticheta), { target: { value: text } });
 const titlu = () => screen.getByRole("heading", { level: 1 }).textContent;
+const PLAN_GOL = "Din răspunsuri nu a reieșit niciun pas de făcut";
+const planul = () => screen.findByRole("heading", { level: 1, name: PLAN_GOL });
 const mesaj = () => screen.getByRole("alert").textContent;
 const salvat = (stocare: Stocare): RaspunsuriPartiale => {
   const citit = stocare.citeste();
@@ -39,7 +41,7 @@ const inainte = () => apasa("Mai departe");
 const panaLaLocuri: RaspunsuriPartiale = { venit: baza.venit, cheltuieli: baza.cheltuieli, ramanBani: "da", datorii: [] };
 
 describe("parcurgerea chestionarului", () => {
-  test("de la prima intrebare pana la capat, cu toate raspunsurile salvate", () => {
+  test("de la prima intrebare pana la capat, cu toate raspunsurile salvate", async () => {
     const stocare = porneste();
     expect(screen.getByText(/1 din 10/)).toBeTruthy();
 
@@ -71,7 +73,7 @@ describe("parcurgerea chestionarului", () => {
     apasa("Nu");
     inainte();
 
-    expect(titlu()).toBe("Ați răspuns la toate întrebările");
+    expect(await planul()).toBeTruthy();
     const raspunsuri = salvat(stocare);
     expect(raspunsuri).toEqual({ ...baza, locuri: [{ tip: "cont", suma: suma(10000), banca: bancaExemplu }] });
     if (!esteComplet(raspunsuri)) throw new Error("chestionar neterminat");
@@ -99,9 +101,9 @@ describe("parcurgerea chestionarului", () => {
     expect(screen.getByText(/5 din 10/)).toBeTruthy();
   });
 
-  test("cu toate raspunsurile date, porneste dupa chestionar, iar raspunsurile pot fi schimbate", () => {
+  test("cu toate raspunsurile date, porneste la plan, iar raspunsurile pot fi schimbate", async () => {
     porneste({ stare: cu(baza) });
-    expect(titlu()).toBe("Ați răspuns la toate întrebările");
+    expect(await planul()).toBeTruthy();
     apasa("Schimbați răspunsurile");
     expect(screen.getByText(/1 din 10/)).toBeTruthy();
     expect((screen.getByLabelText("Suma") as HTMLInputElement).value).toBe("3.000");
@@ -388,7 +390,7 @@ describe("cheltuiala mare", () => {
 describe("reluarea dupa o intrerupere", () => {
   const redeschide = (stocare: Stocare) => {
     cleanup();
-    render(<App stocare={stocare} incarca={() => Promise.resolve({ sursa: "lipsa", cursuri: null })} azi={AZI} />);
+    render(<App stocare={stocare} incarca={() => Promise.resolve({ sursa: "retea", cursuri: cursuriTest })} azi={AZI} parametri={parametriTest} />);
   };
 
   test("cu lista de locuri inceputa, aplicatia redeschide la lista, nu la intrebarea urmatoare", () => {
@@ -411,16 +413,17 @@ describe("reluarea dupa o intrerupere", () => {
     expect(screen.getByText(/3 din 10/)).toBeTruthy();
   });
 
-  test("dupa ultima intrebare, aplicatia redeschide dupa chestionar", () => {
+  test("dupa ultima intrebare, aplicatia redeschide la plan", async () => {
     const stocare = porneste({ stare: { raspunsuri: baza, pasiFacuti: [], laIntrebarea: 9 } });
     expect(screen.getByText(/10 din 10/)).toBeTruthy();
     inainte();
     redeschide(stocare);
-    expect(titlu()).toBe("Ați răspuns la toate întrebările");
+    expect(await planul()).toBeTruthy();
   });
 
-  test("in timpul schimbarii raspunsurilor, aplicatia redeschide la intrebarea respectiva", () => {
+  test("in timpul schimbarii raspunsurilor, aplicatia redeschide la intrebarea respectiva", async () => {
     const stocare = porneste({ stare: cu(baza) });
+    await planul();
     apasa("Schimbați răspunsurile");
     inainte();
     redeschide(stocare);

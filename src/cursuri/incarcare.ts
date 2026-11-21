@@ -39,13 +39,21 @@ export function valideazaCursuri(valoare: unknown): Cursuri | null {
   return { lunaReferinta, generatLa, leiPe: cursuri as Record<Valuta, number> };
 }
 
+export const TIMP_MAXIM_MS = 8000;
+
 async function dinRetea(adresa: string, cere: Cere): Promise<Cursuri | null> {
+  // O cerere care nu mai raspunde este oprita, ca aplicatia sa treaca la copia salvata.
+  // AbortController cu setTimeout merge si pe telefoanele mai vechi.
+  const oprire = new AbortController();
+  const ceas = setTimeout(() => oprire.abort(), TIMP_MAXIM_MS);
   try {
-    const raspuns = await cere(adresa, { cache: "no-store" });
+    const raspuns = await cere(adresa, { cache: "no-store", signal: oprire.signal });
     if (!raspuns.ok) return null;
     return valideazaCursuri(await raspuns.json());
   } catch {
     return null;
+  } finally {
+    clearTimeout(ceas);
   }
 }
 

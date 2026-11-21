@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Machete ecrane</title>
+<style>
+  :root {
+    --bg: #f3f1ec; --ink: #16202a; --muted: #4a5663; --line: #c9c4b8;
+    --card: #ffffff; --accent: #0b5a4a; --accent-ink: #ffffff;
+    --warn-bg: #fff1d6; --warn-ink: #5c3b00; --danger-bg: #fde3df; --danger-ink: #7a1408;
+    --ok-bg: #e2f1ea;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+    font-family: "Segoe UI", system-ui, sans-serif; line-height: 1.45; }
+  header { padding: 24px 16px 8px; max-width: 1500px; margin: 0 auto; }
+  header h1 { margin: 0 0 6px; font-size: 26px; }
+  header p { margin: 0; color: var(--muted); max-width: 70ch; }
+  .banner { display: inline-block; margin-top: 12px; background: var(--warn-bg); color: var(--warn-ink);
+    padding: 6px 12px; border-radius: 6px; font-weight: 600; font-size: 14px; }
+  .row { display: flex; flex-wrap: wrap; gap: 28px; padding: 20px 16px 8px; max-width: 1500px; margin: 0 auto; }
+  figure { margin: 0; width: 340px; max-width: 100%; }
+  figcaption { font-weight: 700; margin-bottom: 8px; font-size: 16px; }
+  figcaption span { display: block; font-weight: 400; color: var(--muted); font-size: 14px; }
+  .phone { background: var(--card); border: 2px solid var(--ink); border-radius: 26px;
+    min-height: 640px; padding: 18px 18px 22px; display: flex; flex-direction: column; font-size: 20px; }
+  .top { display: flex; justify-content: space-between; align-items: center; font-size: 16px; color: var(--muted); margin-bottom: 14px; }
+  .top b { color: var(--ink); }
+  .progress { height: 10px; background: #e3dfd5; border-radius: 5px; margin-bottom: 22px; }
+  .progress i { display: block; height: 100%; width: 20%; background: var(--accent); border-radius: 5px; }
+  h2 { font-size: 26px; line-height: 1.25; margin: 0 0 10px; }
+  .hint { color: var(--muted); font-size: 18px; margin: 0 0 18px; }
+  .btn { display: block; width: 100%; text-align: left; font: inherit; font-size: 21px; padding: 16px 18px; margin-bottom: 12px;
+    border: 2px solid var(--ink); border-radius: 12px; background: var(--card); color: var(--ink); }
+  .btn.sel { background: var(--ok-bg); border-color: var(--accent); font-weight: 700; }
+  .btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); text-align: center; font-weight: 700; }
+  .btn.ghost { border-style: dashed; text-align: center; }
+  .spacer { flex: 1; }
+  .nav { display: flex; gap: 10px; }
+  .nav .btn { margin: 0; text-align: center; }
+  .nav .back { flex: 0 0 38%; }
+  .item { border: 2px solid var(--line); border-radius: 12px; padding: 12px 14px; margin-bottom: 10px; }
+  .item b { display: block; font-size: 21px; }
+  .item small { color: var(--muted); font-size: 17px; }
+  .item .amt { float: right; font-weight: 700; font-size: 21px; }
+  .total { background: var(--ok-bg); border-radius: 12px; padding: 12px 14px; margin: 6px 0 14px; }
+  .total b { font-size: 24px; display: block; }
+  .total small { font-size: 16px; color: var(--muted); }
+  .step { border: 2px solid var(--line); border-radius: 12px; padding: 12px 14px; margin-bottom: 10px; display: flex; gap: 12px; align-items: flex-start; }
+  .step .n { flex: 0 0 38px; height: 38px; border-radius: 50%; background: var(--ink); color: #fff; display: grid; place-items: center; font-weight: 700; }
+  .step.urgent { background: var(--danger-bg); border-color: var(--danger-ink); }
+  .step.urgent .n { background: var(--danger-ink); }
+  .step.done { opacity: .6; }
+  .step.done .n { background: var(--accent); }
+  .step b { display: block; font-size: 20px; }
+  .step small { color: var(--muted); font-size: 17px; }
+  .box { border-left: 6px solid var(--accent); background: #f3f7f5; padding: 10px 14px; border-radius: 0 10px 10px 0; margin-bottom: 14px; font-size: 19px; }
+  .box.warn { border-color: var(--warn-ink); background: var(--warn-bg); }
+  .src { font-size: 15px; color: var(--muted); margin-top: 10px; }
+  .rules { max-width: 1500px; margin: 0 auto; padding: 8px 16px 40px; }
+  .rules h3 { font-size: 20px; margin: 18px 0 8px; }
+  .rules ul { margin: 0; padding-left: 22px; max-width: 80ch; }
+  .rules li { margin-bottom: 6px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Machete: ghid de economii pentru pensionari</h1>
+  <p>Patru ecrane principale, la latimea unui telefon. Arata structura si marimea textului, nu designul final.</p>
+  <div class="banner">Toate sumele sunt fictive, doar pentru macheta</div>
+</header>
+
+<div class="row">
+  <figure>
+    <figcaption>1. Intrebare din chestionar<span>O singura intrebare pe ecran, raspuns prin butoane</span></figcaption>
+    <div class="phone">
+      <div class="top"><span>Intrebarea <b>3 din 10</b></span><span>Ajutor</span></div>
+      <div class="progress"><i></i></div>
+      <h2>La sfarsitul lunii va raman bani?</h2>
+      <p class="hint">Ganditi-va la ultimele trei luni.</p>
+      <button class="btn">Da, de obicei</button>
+      <button class="btn sel">Uneori</button>
+      <button class="btn">Nu, se termina</button>
+      <button class="btn">Nu imi ajung</button>
+      <div class="spacer"></div>
+      <div class="nav"><button class="btn back">Inapoi</button><button class="btn primary">Mai departe</button></div>
+    </div>
+  </figure>
+
+  <figure>
+    <figcaption>2. Unde aveti bani<span>Lista cu sume exacte, pe monede; se completeaza cu un apropiat</span></figcaption>
+    <div class="phone">
+      <div class="top"><span>Intrebarea <b>5 din 10</b></span><span>Ajutor</span></div>
+      <h2>Unde aveti bani pusi deoparte?</h2>
+      <div class="item"><span class="amt">42.000 lei</span><b>Depozit</b><small>Banca A</small></div>
+      <div class="item"><span class="amt">8.500 euro</span><b>Cont</b><small>Banca A</small></div>
+      <div class="item"><span class="amt">6.000 lei</span><b>Acasa</b><small>Numerar</small></div>
+      <div class="item"><span class="amt">50 grame</span><b>Aur</b><small>Monede, nu intra in total</small></div>
+      <button class="btn ghost">+ Adaugati alt loc</button>
+      <div class="total"><small>Total orientativ, fara aur</small><b>aproximativ 93.000 lei</b><small>Euro socotiti la cursul mediu BNR din octombrie 2026</small></div>
+      <div class="spacer"></div>
+      <div class="nav"><button class="btn back">Inapoi</button><button class="btn primary">Mai departe</button></div>
+    </div>
+  </figure>
+
+  <figure>
+    <figcaption>3. Planul<span>Pasi in ordinea prioritatii; frauda apare mereu prima</span></figcaption>
+    <div class="phone">
+      <div class="top"><span><b>Planul dumneavoastra</b></span><span>Tipariti</span></div>
+      <h2>Aveti 4 pasi de facut</h2>
+      <p class="hint">Luati-i pe rand. Nu este nicio graba.</p>
+      <div class="step urgent"><span class="n">!</span><div><b>Atentie la telefonul primit</b><small>Nu trimiteti bani si nu spuneti coduri</small></div></div>
+      <div class="step done"><span class="n">1</span><div><b>Bani pentru urgente</b><small>Facut</small></div></div>
+      <div class="step"><span class="n">2</span><div><b>Toti banii la o singura banca</b><small>Ce inseamna garantarea depozitelor</small></div></div>
+      <div class="step"><span class="n">3</span><div><b>Economii in euro</b><small>Ce se intampla cand cursul se schimba</small></div></div>
+      <div class="spacer"></div>
+      <button class="btn">Schimbati raspunsurile</button>
+    </div>
+  </figure>
+
+  <figure>
+    <figcaption>4. Detaliul unui pas<span>De ce, ce puteti face, unde verificati oficial</span></figcaption>
+    <div class="phone">
+      <div class="top"><span>Pasul <b>2</b></span><span>Inapoi la plan</span></div>
+      <h2>Toti banii la o singura banca</h2>
+      <div class="box"><b>De ce conteaza</b><br>Banii din banca sunt garantati de stat pana la o anumita suma, pentru fiecare banca in parte.</div>
+      <div class="box"><b>Ce puteti face</b><br>Verificati care este suma garantata si comparati cu ce aveti la Banca A.</div>
+      <div class="box warn"><b>Aplicatia nu va spune ce sa alegeti.</b><br>Hotarati dumneavoastra, fara graba.</div>
+      <button class="btn primary">Deschideti pagina oficiala FGDB</button>
+      <p class="hint">Pe pagina, cautati cuvintele "plafon de garantare".</p>
+      <div class="spacer"></div>
+      <button class="btn">Am facut acest pas</button>
+      <div class="src">Sursa: FGDB. Verificat la: (data)</div>
+    </div>
+  </figure>
+</div>
+
+<section class="rules">
+  <h3>Reguli de lizibilitate propuse</h3>
+  <ul>
+    <li>Text de baza de 20 px, titluri de 26 px; nimic sub 15 px in afara de sursa.</li>
+    <li>Butoane inalte de cel putin 56 px, pe toata latimea, cu contur gros.</li>
+    <li>O singura decizie pe ecran; fara meniuri ascunse si fara gesturi de glisare.</li>
+    <li>Contrast ridicat, o singura culoare de accent; rosu doar pentru frauda.</li>
+    <li>Adresare cu "dumneavoastra"; niciun termen financiar fara explicatie pe acelasi ecran.</li>
+    <li>"Inapoi" mereu in acelasi loc; raspunsurile se salveaza singure la fiecare pas.</li>
+  </ul>
+</section>
+</body>
+</html>

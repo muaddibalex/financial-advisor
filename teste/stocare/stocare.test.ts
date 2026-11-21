@@ -3,7 +3,7 @@ import { PREFIX, VERSIUNE, creeazaStocare, depozitInMemorie, depozitulBrowserulu
 import { STARE_GOALA, esteComplet, valideazaStare, type StareSalvata } from "../../src/stocare/validare";
 import { baza, cursuriTest } from "../fixturi/situatii";
 
-const stare: StareSalvata = { raspunsuri: baza, pasiFacuti: ["ordine-in-acte"] };
+const stare: StareSalvata = { raspunsuri: baza, pasiFacuti: ["ordine-in-acte"], laIntrebarea: null };
 const CHEIE = `${PREFIX}stare`;
 
 /** Un depozit care refuza orice scriere, ca un browser cu stocarea plina. */
@@ -33,7 +33,7 @@ describe("citirea starii", () => {
   });
 
   test("chestionar neterminat: raspunsurile partiale sunt valide", () => {
-    const partiala: StareSalvata = { raspunsuri: { venit: baza.venit, ramanBani: "uneori" }, pasiFacuti: [] };
+    const partiala: StareSalvata = { raspunsuri: { venit: baza.venit, ramanBani: "uneori" }, pasiFacuti: [], laIntrebarea: null };
     const stocare = creeazaStocare(depozit);
     stocare.salveaza(partiala);
     expect(stocare.citeste()).toEqual({ fel: "valida", stare: partiala });
@@ -55,11 +55,14 @@ describe("citirea starii", () => {
     ["versiune care nu este numar", JSON.stringify({ versiune: "1", stare })],
     ["fara stare", JSON.stringify({ versiune: VERSIUNE })],
     ["null", "null"],
-    ["raspuns necunoscut", JSON.stringify({ versiune: VERSIUNE, stare: { raspunsuri: { parola: "x" }, pasiFacuti: [] } })],
-    ["suma negativa", JSON.stringify({ versiune: VERSIUNE, stare: { raspunsuri: { venit: { fel: "suma", valoare: -1, moneda: "RON" } }, pasiFacuti: [] } })],
-    ["moneda necunoscuta", JSON.stringify({ versiune: VERSIUNE, stare: { raspunsuri: { venit: { fel: "suma", valoare: 1, moneda: "CHF" } }, pasiFacuti: [] } })],
-    ["cont fara banca", JSON.stringify({ versiune: VERSIUNE, stare: { raspunsuri: { locuri: [{ tip: "cont", suma: { fel: "lipsa" } }] }, pasiFacuti: [] } })],
-    ["pas necunoscut", JSON.stringify({ versiune: VERSIUNE, stare: { raspunsuri: {}, pasiFacuti: ["cumpara-actiuni"] } })],
+    ["raspuns necunoscut", JSON.stringify({ versiune: VERSIUNE, stare: { raspunsuri: { parola: "x" }, pasiFacuti: [], laIntrebarea: null } })],
+    ["suma negativa", JSON.stringify({ versiune: VERSIUNE, stare: { raspunsuri: { venit: { fel: "suma", valoare: -1, moneda: "RON" } }, pasiFacuti: [], laIntrebarea: null } })],
+    ["moneda necunoscuta", JSON.stringify({ versiune: VERSIUNE, stare: { raspunsuri: { venit: { fel: "suma", valoare: 1, moneda: "CHF" } }, pasiFacuti: [], laIntrebarea: null } })],
+    ["cont fara banca", JSON.stringify({ versiune: VERSIUNE, stare: { raspunsuri: { locuri: [{ tip: "cont", suma: { fel: "lipsa" } }] }, pasiFacuti: [], laIntrebarea: null } })],
+    ["fara pozitie", JSON.stringify({ versiune: VERSIUNE, stare: { raspunsuri: {}, pasiFacuti: [] } })],
+    ["pozitie dincolo de ultima intrebare", JSON.stringify({ versiune: VERSIUNE, stare: { raspunsuri: {}, pasiFacuti: [], laIntrebarea: 10 } })],
+    ["pozitie care nu este numar intreg", JSON.stringify({ versiune: VERSIUNE, stare: { raspunsuri: {}, pasiFacuti: [], laIntrebarea: 1.5 } })],
+    ["pas necunoscut", JSON.stringify({ versiune: VERSIUNE, stare: { raspunsuri: {}, pasiFacuti: ["cumpara-actiuni"], laIntrebarea: null } })],
   ])("date stricate: %s", (_nume, continut) => {
     depozit.setItem(CHEIE, continut);
     expect(creeazaStocare(depozit).citeste()).toEqual({ fel: "stricata" });
@@ -130,6 +133,10 @@ describe("validare", () => {
     expect(esteComplet({ ...baza, altaSituatie: undefined })).toBe(false);
     expect(esteComplet({})).toBe(false);
   });
+  test("pozitia in chestionar se pastreaza", () => {
+    const laMijloc: StareSalvata = { raspunsuri: { venit: baza.venit }, pasiFacuti: [], laIntrebarea: 4 };
+    expect(valideazaStare(laMijloc)).toEqual(laMijloc);
+  });
   test("aurul fara grame si banca scrisa de mana sunt valide", () => {
     const cuAur: StareSalvata = {
       raspunsuri: {
@@ -139,6 +146,7 @@ describe("validare", () => {
         ],
       },
       pasiFacuti: [],
+      laIntrebarea: null,
     };
     expect(valideazaStare(cuAur)).toEqual(cuAur);
   });

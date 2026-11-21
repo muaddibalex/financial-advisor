@@ -6,7 +6,7 @@ import type { Cursuri, Raspunsuri } from "./domeniu/tipuri";
 import { EcranAlegere, EcranCheltuialaMare, EcranDaNu, EcranDatorii, EcranSuma, type Navigare } from "./ecrane/Intrebare";
 import { ListaLocuri } from "./ecrane/ListaLocuri";
 import { creeazaStocare, type Stocare } from "./stocare/stocare";
-import { STARE_GOALA, esteComplet, type RaspunsuriPartiale, type StareSalvata } from "./stocare/validare";
+import { STARE_GOALA, type RaspunsuriPartiale, type StareSalvata } from "./stocare/validare";
 
 type Proprietati = {
   readonly stocare?: Stocare;
@@ -30,7 +30,9 @@ function primaFaraRaspuns(raspunsuri: RaspunsuriPartiale): number {
   return INTREBARI.findIndex((i) => raspunsuri[i.cheie] === undefined);
 }
 
-function ecranDePornire(raspunsuri: RaspunsuriPartiale): Ecran {
+function ecranDePornire({ raspunsuri, laIntrebarea }: StareSalvata): Ecran {
+  // Dupa o intrerupere, omul reia de la intrebarea la care a ramas.
+  if (laIntrebarea !== null && laIntrebarea < INTREBARI.length) return { fel: "intrebare", index: laIntrebarea };
   const index = primaFaraRaspuns(raspunsuri);
   return index === -1 ? { fel: "gata" } : { fel: "intrebare", index };
 }
@@ -42,7 +44,7 @@ export function App({ stocare: stocareData, incarca = incarcaDinRetea, azi = azi
   const [citit] = useState(() => stocare.citeste());
   const [stare, setStare] = useState<StareSalvata>(citit.fel === "valida" ? citit.stare : STARE_GOALA);
   const [ecran, setEcran] = useState<Ecran>(() =>
-    citit.fel === "versiune-veche" || citit.fel === "stricata" ? { fel: "date-necitite" } : ecranDePornire(stare.raspunsuri),
+    citit.fel === "versiune-veche" || citit.fel === "stricata" ? { fel: "date-necitite" } : ecranDePornire(stare),
   );
   const [salvareEsuata, setSalvareEsuata] = useState(false);
   // undefined: cursurile inca se incarca. null: nu exista nici in retea, nici in copie.
@@ -66,10 +68,21 @@ export function App({ stocare: stocareData, incarca = incarcaDinRetea, azi = azi
     if (valoare === undefined) delete raspunsuri[cheie];
     else raspunsuri[cheie] = valoare;
     // Pasii bifati se pastreaza: salvarea unui raspuns nu ii sterge.
-    const noua: StareSalvata = { ...ultima.current, raspunsuri };
+    // Odata cu raspunsul se retine si intrebarea, ca o lista inceputa sa fie reluata, nu sarita.
+    const laIntrebarea = ecran.fel === "intrebare" ? ecran.index : ultima.current.laIntrebarea;
+    const noua: StareSalvata = { ...ultima.current, raspunsuri, laIntrebarea };
     ultima.current = noua;
     setStare(noua);
     setSalvareEsuata(!stocare.salveaza(noua));
+  };
+
+  /** Schimba ecranul si retine unde a ajuns omul. */
+  const mergiLa = (nou: Ecran) => {
+    const noua: StareSalvata = { ...ultima.current, laIntrebarea: nou.fel === "intrebare" ? nou.index : null };
+    ultima.current = noua;
+    setStare(noua);
+    setSalvareEsuata(!stocare.salveaza(noua));
+    setEcran(nou);
   };
 
   const avertizare = !stocare.persistenta
@@ -114,7 +127,7 @@ export function App({ stocare: stocareData, incarca = incarcaDinRetea, azi = azi
         <h1>Ați răspuns la toate întrebările</h1>
         <p>Planul dumneavoastră va apărea aici. Această parte a aplicației este încă în lucru.</p>
         <div class="spatiu" />
-        <button type="button" class="buton" onClick={() => setEcran({ fel: "intrebare", index: 0 })}>
+        <button type="button" class="buton" onClick={() => mergiLa({ fel: "intrebare", index: 0 })}>
           Schimbați răspunsurile
         </button>
       </main>,
@@ -127,11 +140,12 @@ export function App({ stocare: stocareData, incarca = incarcaDinRetea, azi = azi
 
   const navigare: Navigare = {
     pozitie: { numar: index + 1, total: INTREBARI.length },
-    onInapoi: index > 0 ? () => setEcran({ fel: "intrebare", index: index - 1 }) : undefined,
+    onInapoi: index > 0 ? () => mergiLa({ fel: "intrebare", index: index - 1 }) : undefined,
     onInainte: () => {
-      if (index + 1 < INTREBARI.length) return setEcran({ fel: "intrebare", index: index + 1 });
+      if (index + 1 < INTREBARI.length) return mergiLa({ fel: "intrebare", index: index + 1 });
       // Dupa ultima intrebare: la plan, sau inapoi la prima ramasa fara raspuns.
-      setEcran(esteComplet(ultima.current.raspunsuri) ? { fel: "gata" } : ecranDePornire(ultima.current.raspunsuri));
+      const prima = primaFaraRaspuns(ultima.current.raspunsuri);
+      mergiLa(prima === -1 ? { fel: "gata" } : { fel: "intrebare", index: prima });
     },
   };
 

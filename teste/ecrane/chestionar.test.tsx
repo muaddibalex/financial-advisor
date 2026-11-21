@@ -23,7 +23,7 @@ function porneste(optiuni: { stare?: StareSalvata; cursuri?: Cursuri | null; dep
   return stocare;
 }
 
-const cu = (raspunsuri: RaspunsuriPartiale): StareSalvata => ({ raspunsuri, pasiFacuti: [] });
+const cu = (raspunsuri: RaspunsuriPartiale): StareSalvata => ({ raspunsuri, pasiFacuti: [], laIntrebarea: null });
 const apasa = (nume: string | RegExp) => fireEvent.click(screen.getByRole("button", { name: nume }));
 const scrie = (eticheta: string | RegExp, text: string) => fireEvent.input(screen.getByLabelText(eticheta), { target: { value: text } });
 const titlu = () => screen.getByRole("heading", { level: 1 }).textContent;
@@ -385,6 +385,49 @@ describe("cheltuiala mare", () => {
   });
 });
 
+describe("reluarea dupa o intrerupere", () => {
+  const redeschide = (stocare: Stocare) => {
+    cleanup();
+    render(<App stocare={stocare} incarca={() => Promise.resolve({ sursa: "lipsa", cursuri: null })} azi={AZI} />);
+  };
+
+  test("cu lista de locuri inceputa, aplicatia redeschide la lista, nu la intrebarea urmatoare", () => {
+    const stocare = porneste({ stare: cu(panaLaLocuri) });
+    apasa("+ Adăugați un loc");
+    apasa(/^Acasă/);
+    scrie("Suma", "6000");
+    apasa("Salvați");
+
+    redeschide(stocare);
+    expect(screen.getByText(/5 din 10/)).toBeTruthy();
+    expect(screen.getByRole("button", { name: /^Schimbați: Acasă/ })).toBeTruthy();
+  });
+
+  test("dupa Inapoi, aplicatia redeschide la intrebarea la care s-a intors omul", () => {
+    const stocare = porneste({ stare: cu(panaLaLocuri) });
+    apasa("Înapoi");
+    apasa("Înapoi");
+    redeschide(stocare);
+    expect(screen.getByText(/3 din 10/)).toBeTruthy();
+  });
+
+  test("dupa ultima intrebare, aplicatia redeschide dupa chestionar", () => {
+    const stocare = porneste({ stare: { raspunsuri: baza, pasiFacuti: [], laIntrebarea: 9 } });
+    expect(screen.getByText(/10 din 10/)).toBeTruthy();
+    inainte();
+    redeschide(stocare);
+    expect(titlu()).toBe("Ați răspuns la toate întrebările");
+  });
+
+  test("in timpul schimbarii raspunsurilor, aplicatia redeschide la intrebarea respectiva", () => {
+    const stocare = porneste({ stare: cu(baza) });
+    apasa("Schimbați răspunsurile");
+    inainte();
+    redeschide(stocare);
+    expect(screen.getByText(/2 din 10/)).toBeTruthy();
+  });
+});
+
 describe("pornirea si salvarea", () => {
   test.each([
     ["stricate", "{raspunsuri", "deteriorate"],
@@ -408,12 +451,12 @@ describe("pornirea si salvarea", () => {
   });
 
   test("salvarea unui raspuns pastreaza pasii bifati", () => {
-    const stocare = porneste({ stare: { raspunsuri: { venit: baza.venit }, pasiFacuti: ["ordine-in-acte"] } });
+    const stocare = porneste({ stare: { raspunsuri: { venit: baza.venit }, pasiFacuti: ["ordine-in-acte"], laIntrebarea: null } });
     scrie("Suma", "2500");
     inainte();
     expect(stocare.citeste()).toEqual({
       fel: "valida",
-      stare: { raspunsuri: { venit: baza.venit, cheltuieli: suma(2500) }, pasiFacuti: ["ordine-in-acte"] },
+      stare: { raspunsuri: { venit: baza.venit, cheltuieli: suma(2500) }, pasiFacuti: ["ordine-in-acte"], laIntrebarea: 2 },
     });
   });
 

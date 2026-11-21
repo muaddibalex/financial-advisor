@@ -11,7 +11,7 @@ const CHEIE_STARE = `${PREFIX}stare`;
 const CHEIE_CURSURI = `${PREFIX}cursuri`;
 
 /** Se schimba cand forma datelor salvate se schimba. Datele cu alta versiune nu sunt citite. */
-export const VERSIUNE = 1;
+export const VERSIUNE = 2;
 
 export type RezultatCitire =
   | { readonly fel: "lipsa" }

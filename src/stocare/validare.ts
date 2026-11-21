@@ -11,9 +11,14 @@ export type StareSalvata = {
   readonly raspunsuri: RaspunsuriPartiale;
   /** Pasii pe care omul i-a bifat ca facuti. Este declaratia lui, nu o verificare. */
   readonly pasiFacuti: readonly IdPas[];
+  /**
+   * Intrebarea la care a ramas omul, numarata de la 0, ca dupa o intrerupere
+   * sa reia de acolo. null: nu este in mijlocul chestionarului.
+   */
+  readonly laIntrebarea: number | null;
 };
 
-export const STARE_GOALA: StareSalvata = { raspunsuri: {}, pasiFacuti: [] };
+export const STARE_GOALA: StareSalvata = { raspunsuri: {}, pasiFacuti: [], laIntrebarea: null };
 
 const MONEDE: readonly Moneda[] = ["RON", "EUR", "USD", "GBP"];
 const DATORII: readonly Datorie[] = ["banca", "ifn", "card", "persoane"];
@@ -76,13 +81,17 @@ function esteRaspunsuriPartiale(v: unknown): v is RaspunsuriPartiale {
   });
 }
 
+const estePozitie = (v: unknown): v is number =>
+  typeof v === "number" && Number.isInteger(v) && v >= 0 && v < Object.keys(VERIFICARI).length;
+
 /** Intoarce starea daca este corecta in intregime, altfel null. */
 export function valideazaStare(v: unknown): StareSalvata | null {
   if (!esteObiect(v)) return null;
-  const { raspunsuri, pasiFacuti } = v;
+  const { raspunsuri, pasiFacuti, laIntrebarea } = v;
+  if (laIntrebarea !== null && !estePozitie(laIntrebarea)) return null;
   if (!esteRaspunsuriPartiale(raspunsuri)) return null;
   if (!Array.isArray(pasiFacuti) || !pasiFacuti.every((p) => esteUnulDin(p, ORDINEA_PASILOR))) return null;
-  return { raspunsuri, pasiFacuti: pasiFacuti as IdPas[] };
+  return { raspunsuri, pasiFacuti: pasiFacuti as IdPas[], laIntrebarea };
 }
 
 /** Chestionarul este terminat cand exista raspuns la toate cele 10 intrebari. */

@@ -102,11 +102,16 @@ describe("validarea continutului pentru publicare", () => {
     expect(probleme(cuPas("girant", { ...sfatGeneral, sursa: "Codul civil", verificatLa: "2026-11-01" }))).toEqual([]);
   });
 
-  test("pasii care trimit la o institutie au link in continutul de acum sau sunt inca de completat, niciodata scutiti", () => {
-    for (const id of ["frauda", "o-singura-banca", "bani-peste-rezerva", "produse-neintelese"] as const) {
+  test("pasii care trimit la o institutie au link si nu pot fi scutiti din greseala", () => {
+    for (const id of ["frauda", "o-singura-banca", "produse-neintelese"] as const) {
       expect(PASI[id].faraLink).toBeUndefined();
+      expect(PASI[id].link?.adresa.startsWith("https://")).toBe(true);
     }
-    expect(ORDINEA_PASILOR.filter((id) => PASI[id].faraLink !== undefined)).toHaveLength(10);
+    expect(ORDINEA_PASILOR.filter((id) => PASI[id].faraLink !== undefined)).toHaveLength(11);
+  });
+
+  test("continutul real al pasilor trece verificarea de publicare", () => {
+    expect(probleme({ ...bun, pasi: PASI })).toEqual([]);
   });
 
   test("plafonul verificat acum mai mult de 12 luni opreste publicarea", () => {

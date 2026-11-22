@@ -1,7 +1,8 @@
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/preact";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { App } from "../../src/app";
-import { PASI } from "../../src/continut/pasi";
+import { CONTINUT_IN_CIORNA, PASI } from "../../src/continut/pasi";
+import { Plan } from "../../src/ecrane/Plan";
 import type { RezultatCursuri } from "../../src/cursuri/incarcare";
 import { ORDINEA_PASILOR } from "../../src/domeniu/reguli";
 import { LIPSA, type Cursuri, type Parametri, type Raspunsuri } from "../../src/domeniu/tipuri";
@@ -97,10 +98,19 @@ describe("starile planului", () => {
     expect(pasiiAfisati()).toEqual([]);
   });
 
-  test("continutul in ciorna este anuntat pe ecran", async () => {
-    porneste();
-    await laPlan(/niciun pas/);
-    expect(screen.getAllByText(/Versiune de probă/).length).toBeGreaterThan(0);
+  test("cu toate textele aprobate, planul nu mai spune ca este o versiune de proba", async () => {
+    porneste({ raspunsuri: cuFrauda });
+    await laPlan(/de făcut/);
+    expect(CONTINUT_IN_CIORNA).toBe(false);
+    expect(screen.queryByText(/Versiune de probă/)).toBeNull();
+  });
+
+  test("un continut in ciorna este anuntat pe ecran si pe foaia tiparita", () => {
+    const plan = construiestePlan(cuFrauda, cursuriTest, parametriTest, AZI, []);
+    const nimic = () => {};
+    render(<Plan plan={plan} cursuri={cursuriTest} azi={AZI} inCiorna onDeschide={nimic} onSchimba={nimic} onTipareste={nimic} />);
+    expect(within(screen.getByRole("main")).getByText(/Versiune de probă/)).toBeTruthy();
+    expect(deTiparit()).toContain("Versiune de probă");
   });
 });
 

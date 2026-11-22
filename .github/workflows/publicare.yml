@@ -1,0 +1,82 @@
+# Publicarea aplicatiei pe GitHub Pages.
+#
+# Ruleaza la fiecare modificare pe ramura principala, la cerere, si cand este
+# apelat de cursuri.yml dupa o actualizare a cursurilor. Orice pas care esueaza
+# opreste publicarea: aplicatia veche ramane pe site.
+#
+# Versiunile actiunilor si regulile de mai jos au fost citite la 22.11.2026 din
+# README-urile actiunilor (actions/checkout, actions/setup-node,
+# actions/upload-pages-artifact, actions/deploy-pages) si din documentatia
+# GitHub ("Reuse workflows", "Events that trigger workflows").
+#
+# NEINCERCAT pe GitHub: fisierul a fost scris inainte sa existe un repo.
+# Pasii lui au fost rulati doar local.
+
+name: Publicare
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      ref:
+        description: Commit-ul de construit. Gol inseamna commit-ul care a pornit rularea.
+        required: false
+        type: string
+        default: ""
+
+# Fiecare job primeste doar drepturile de care are nevoie.
+permissions:
+  contents: read
+
+jobs:
+  construieste:
+    runs-on: ubuntu-latest
+    steps:
+      # Cand publicarea este apelata de cursuri.yml, contextul este al apelantului:
+      # fara "ref", s-ar construi commit-ul de dinaintea noilor cursuri.
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref }}
+
+      # Aceeasi versiune majora de Node ca la dezvoltare: scripturile ruleaza fisiere .ts direct.
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 26
+          cache: npm
+
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+
+      # Refuza publicarea daca un text este ciorna, lipseste o sursa, plafonul sau
+      # lista bancilor au verificarea mai veche de 12 luni, ori incadrarea nu este lamurita.
+      - run: npm run verifica-continut
+
+      - run: npm run build
+
+      # Refuza un build in care cursuri.json ajunge in copia pastrata de service worker,
+      # o adresa nu este relativa sau ceva se incarca de pe alt site.
+      - run: npm run verifica-build
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist/
+
+  publica:
+    needs: construieste
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.publicare.outputs.page_url }}
+    # O singura publicare odata; cea in curs nu este intrerupta.
+    concurrency:
+      group: publicare-pages
+      cancel-in-progress: false
+    steps:
+      - id: publicare
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,77 @@
+# Jobul lunar de cursuri: calculeaza media BNR a lunii incheiate, o salveaza in
+# public/cursuri.json si publica aplicatia cu noile cursuri.
+#
+# Programarea este in UTC si ruleaza doar de pe ramura principala. Ruleaza de doua
+# ori, in zilele 2 si 5: a doua rulare acopera o rulare intarziata sau abandonata.
+# Minutul 17 este ales in afara inceputului de ora, cand GitHub este mai aglomerat.
+#
+# De stiut (documentatia GitHub, citita la 22.11.2026):
+#  - intr-un repo public, joburile programate sunt dezactivate automat dupa 60 de
+#    zile fara activitate in repo; documentatia nu spune ce conteaza ca activitate.
+#    Singurul semnal sigur ca jobul nu mai ruleaza este avertizarea de curs vechi
+#    din aplicatie;
+#  - o modificare salvata in repo cu jetonul implicit nu porneste alte workflow-uri.
+#    De aceea publicarea este apelata direct de aici.
+#
+# NEINCERCAT pe GitHub: fisierul a fost scris inainte sa existe un repo.
+
+name: Cursuri lunare
+
+on:
+  schedule:
+    - cron: "17 6 2,5 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  actualizeaza:
+    runs-on: ubuntu-latest
+    # Singurul job care are voie sa scrie in repo.
+    permissions:
+      contents: write
+    outputs:
+      schimbat: ${{ steps.salveaza.outputs.schimbat }}
+      sha: ${{ steps.salveaza.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 26
+          cache: npm
+
+      - run: npm ci
+
+      # La orice eroare (BNR indisponibil, luna cu prea putine zile) se opreste aici,
+      # iar fisierul existent ramane neatins.
+      - run: npm run cursuri
+
+      - id: salveaza
+        run: |
+          if git diff --quiet -- public/cursuri.json; then
+            echo "Cursurile sunt deja la zi. Nimic de salvat."
+            echo "schimbat=false" >> "$GITHUB_OUTPUT"
+          else
+            git config user.name "Jobul de cursuri"
+            git config user.email "jobul-de-cursuri@example.invalid"
+            git add public/cursuri.json
+            git commit -m "Actualizeaza cursurile medii BNR"
+            git push
+            echo "schimbat=true" >> "$GITHUB_OUTPUT"
+          fi
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+  publica:
+    needs: actualizeaza
+    if: needs.actualizeaza.outputs.schimbat == 'true'
+    # Un workflow apelat nu poate primi mai multe drepturi decat ii da apelantul.
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    uses: ./.github/workflows/publicare.yml
+    with:
+      # Commit-ul cu noile cursuri, nu cel de la care a pornit rularea.
+      ref: ${{ needs.actualizeaza.outputs.sha }}

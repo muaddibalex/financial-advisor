@@ -1,15 +1,16 @@
 // Textele pasilor din plan (specificatie, sectiunea 5).
 //
-// APROBAT de proprietar la 22.11.2026: textele a 13 pasi, in forma de mai jos.
-// Orice schimbare de text dupa aceasta data se aproba din nou.
+// APROBAT de proprietar la 22.11.2026: textele tuturor celor 14 pasi, in forma
+// de mai jos. Orice schimbare de text dupa aceasta data se aproba din nou.
 //
-// CIORNA ramane un singur pas, "bani-peste-rezerva": textul si linkul lui
-// depind de raspunsul ASF despre incadrare (vezi src/continut/incadrare.ts).
-// Pana atunci aplicatia nu poate fi publicata.
+// Pasul "bani-peste-rezerva" a fost aprobat ultimul, dupa ce proprietarul a
+// hotarat ca raspunsul ASF nu este necesar (vezi src/continut/incadrare.ts).
+// Este singurul pas care explica produse financiare; definitiile din el nu au
+// o sursa notata.
 //
-// Patru pasi trimit la o institutie si au nevoie de link: frauda, o singura
-// banca, bani peste rezerva si produse neintelese. Ceilalti zece raman fara
-// link, fiecare cu motivul scris (deciziile proprietarului din 22.11.2026).
+// Trei pasi trimit la o institutie si au link: frauda, o singura banca si
+// produse neintelese. Ceilalti unsprezece raman fara link, fiecare cu motivul
+// scris (deciziile proprietarului din 22.11.2026).
 //
 // Reguli pentru texte: fara produse, emitenti sau banci numite; fara sume,
 // dobanzi sau plafoane; fara indemnuri de a pune bani intr-un produs.
@@ -43,8 +44,6 @@ export type ContinutPas = {
   readonly ciorna: boolean;
 };
 
-/** Pas inca neaprobat, fara link si fara sursa. */
-const neverificat = { link: null, sursa: null, verificatLa: null, ciorna: true } as const;
 /** Sfat general aprobat de proprietar: fara link si fara sursa oficiala, cu motivul scris la pas. */
 const sfatAprobat = { link: null, sursa: null, verificatLa: null, ciorna: false } as const;
 
@@ -158,7 +157,9 @@ export const PASI: Readonly<Record<IdPas, ContinutPas>> = {
       "Un titlu de stat este un împrumut dat statului pe o perioadă stabilită, pentru care statul plătește dobândă.",
       "Pentru fiecare, întrebați: pe ce perioadă, ce dobândă și ce se întâmplă dacă scot banii mai devreme.",
     ],
-    ...neverificat,
+    // Fara link, din alegere: o pagina oficiala despre titluri de stat ar fi pagina unui produs anume.
+    ...sfatAprobat,
+    faraLink: "Un link ar duce la pagina unui produs anume, ceea ce aplicatia evita.",
   },
   "alta-moneda": {
     titlu: "Economii în altă monedă",

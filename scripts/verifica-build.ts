@@ -7,7 +7,8 @@
 //  - codul aplicatiei este un singur fisier: o pagina deja deschisa nu mai cere
 //    nimic dupa ce o versiune noua sterge cache-ul vechi;
 //  - nicio adresa nu incepe cu "/": pe GitHub Pages aplicatia sta sub /<nume-repo>/;
-//  - nimic nu se incarca de pe alt site: fara scripturi, fonturi sau imagini de la terti.
+//  - nimic nu se incarca de pe alt site: fara scripturi, fonturi sau imagini de la terti;
+//  - pagina cere motoarelor de cautare sa nu o listeze.
 
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
@@ -53,6 +54,8 @@ for (const m of html.matchAll(/(?:src|href)="([^"]+)"/g)) {
   const adresa = m[1] ?? "";
   cere(adresa.startsWith("./"), `index.html: adresa nu este relativa: ${adresa}`);
 }
+// Decizia despre incadrare se sprijina pe faptul ca aplicatia ramane pentru cateva persoane.
+cere(/<meta name="robots" content="noindex/.test(html), "index.html nu cere motoarelor de cautare sa nu listeze aplicatia (lipseste noindex)");
 cere(!/serviceWorker|registerSW/.test(html), "index.html inregistreaza si el service worker-ul; inregistrarea se face o singura data, din aplicatie");
 
 const manifest = JSON.parse(readFileSync(join(DIST, "manifest.webmanifest"), "utf8")) as Record<string, unknown>;
@@ -69,10 +72,17 @@ const ADRESE_INGADUITE: readonly RegExp[] = [
   // Text dintr-un mesaj de eroare al bibliotecii workbox. Nu este o cerere.
   /^https:\/\/bit\.ly\/wb-precache$/,
 ];
+// Linkurile oficiale ale pasilor sunt adrese pe care le deschide omul, nu incarcari facute de aplicatie.
+// Sunt ingaduite exact cele declarate in fisierul de continut, nimic in plus.
+const LINKURI_DIN_PASI = new Set(
+  [...readFileSync(join("src", "continut", "pasi.ts"), "utf8").matchAll(/adresa:\s*"(https:\/\/[^"]+)"/g)].map((m) => m[1] ?? ""),
+);
+
 for (const cale of fisiere(DIST)) {
   if (!/\.(html|js|css|webmanifest|json)$/.test(cale)) continue;
   for (const m of readFileSync(cale, "utf8").matchAll(/https?:\/\/[^\s"'`)<>\\]+/g)) {
-    cere(ADRESE_INGADUITE.some((r) => r.test(m[0])), `${cale}: adresa catre alt site: ${m[0]}`);
+    const ingaduita = ADRESE_INGADUITE.some((r) => r.test(m[0])) || LINKURI_DIN_PASI.has(m[0]);
+    cere(ingaduita, `${cale}: adresa catre alt site: ${m[0]}`);
   }
 }
 

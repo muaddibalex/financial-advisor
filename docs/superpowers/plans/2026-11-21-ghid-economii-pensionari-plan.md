@@ -175,7 +175,11 @@ Conditie: contul si numele repo-ului, de la proprietar. Crearea repo-ului si pri
 - `publicare.yml`: la fiecare modificare pe ramura principala ruleaza testele, validarea continutului si build-ul, apoi publica. Orice esec opreste publicarea. Poate fi apelat si din alt workflow.
 - `cursuri.yml`: ruleaza programat in zilele 2 si 5 ale fiecarei luni, la o ora si un minut alese in afara inceputului de ora, si poate fi pornit si manual. Ruleaza jobul din etapa 5, salveaza `cursuri.json` in repo doar daca s-a schimbat, apoi apeleaza el insusi `publicare.yml`.
 
-De ce apeleaza publicarea direct: din cate stiu, o modificare salvata in repo de un workflow cu jetonul lui implicit nu porneste alte workflow-uri, deci noul fisier de cursuri nu ar ajunge pe site. Nu am verificat asta in documentatie in aceasta sesiune. Apelarea directa functioneaza in ambele cazuri, iar criteriul de la finalul etapei o confirma.
+De ce apeleaza publicarea direct: o modificare salvata in repo de un workflow cu jetonul lui implicit nu porneste alte workflow-uri, deci noul fisier de cursuri nu ar ajunge pe site. Confirmat la 22.11.2026 in documentatia GitHub, pagina "Triggering a workflow": "events triggered by the GITHUB_TOKEN will not create a new workflow run", cu exceptia `workflow_dispatch` si `repository_dispatch`.
+
+Confirmat la aceeasi data, pagina "Events that trigger workflows": intr-un workflow apelat, commit-ul si contextul sunt ale apelantului. De aceea `cursuri.yml` ii trimite lui `publicare.yml` commit-ul cu noile cursuri; altfel s-ar publica din nou cursurile vechi, cu o rulare reusita. Un workflow apelat nu poate primi mai multe drepturi decat ii da apelantul (pagina "Reusing workflow configurations").
+
+Fisierele `publicare.yml` si `cursuri.yml` sunt scrise (22.11.2026) si pasii lor au fost rulati local, intr-o clona curata. Nu au fost rulate pe GitHub: nu exista inca un repo.
 
 Limite confirmate din documentatia GitHub (pagina "Events that trigger workflows", sectiunea "schedule", citita la 21.11.2026):
 

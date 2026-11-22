@@ -194,3 +194,19 @@ Proprietarul a aprobat, dupa o revizuire recomandata la cererea lui:
 - textul ecranului "Siguranta".
 
 Ramane neaprobat pasul "Bani peste rezerva", al carui text si link depind de raspunsul ASF. Orice schimbare de text dupa aceasta data se aproba din nou.
+
+## Decizia despre incadrarea ASF, schimbata (22.11.2026)
+
+Proprietarul a hotarat ca raspunsul ASF nu mai este necesar: aplicatia va fi folosita de 2-3 persoane apropiate, gratuit.
+
+- Aceasta este decizia proprietarului, pe raspunderea lui. Nu este o concluzie juridica si nu vine de la ASF. Verificarile din sectiunea 2 raman partiale: regulamentul european care desparte informatia generala de recomandarea personala nu a fost citit.
+- Decizia se sprijina pe o conditie: aplicatia ramane pentru cateva persoane apropiate. O adresa GitHub Pages poate fi deschisa de oricine o afla, iar un repo public isi arata codul tuturor. De aceea pagina cere motoarelor de cautare sa nu o listeze (noindex), iar verificarea build-ului refuza un build fara aceasta cerere.
+- Daca aplicatia ajunge la un public mai larg, incadrarea se lamureste din nou, iar `lamurita` din `src/continut/incadrare.ts` revine la false.
+
+## Pasul "Bani peste rezerva", incheiat (22.11.2026)
+
+Proprietarul a aprobat textul pasului si a hotarat ca pasul ramane fara link: o pagina oficiala despre titluri de stat ar fi pagina unui produs anume. Pe ecran, pasul apare ca sfat general, fara sursa oficiala.
+
+De stiut: este singurul pas care explica produse financiare, iar definitiile din el (ce este un depozit, ce este un titlu de stat) nu au o sursa notata.
+
+Cu aceasta, toate cele 14 texte sunt aprobate, iar verificarea de publicare nu mai gaseste nicio problema.

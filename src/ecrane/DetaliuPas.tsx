@@ -60,7 +60,7 @@ export function DetaliuPas({ pas, cifre, note = [], onInapoi, onBifeaza }: Propr
       ) : c.faraLink === undefined ? (
         <p class="indiciu">Linkul către pagina oficială urmează să fie adăugat.</p>
       ) : c.sursa === null ? (
-        <p class="indiciu">Acesta este un sfat general de organizare. Nu vine dintr-o sursă oficială.</p>
+        <p class="indiciu">Acesta este un sfat general. Nu vine dintr-o sursă oficială.</p>
       ) : null}
       <div class="spatiu" />
       {sePoateBifa(pas.id) ? (

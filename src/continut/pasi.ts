@@ -104,6 +104,7 @@ export const PASI: Readonly<Record<IdPas, ContinutPas>> = {
     cePutetiFace: [
       "Aflați, din sursa oficială, care este suma garantată.",
       "Comparați cu ce aveți la aceeași bancă, în toate conturile și depozitele la un loc.",
+      "Pentru bani veniți de curând din pensionare sau din vânzarea unei locuințe, suma garantată poate fi mai mare pentru o vreme. Pagina oficială explică.",
     ],
     // Linkul si sursa sunt verificate (vezi docs/verificari). Textul ramane ciorna pana il aproba proprietarul.
     link: {

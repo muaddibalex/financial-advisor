@@ -6,9 +6,9 @@
 // de verificare lipsesc intentionat: se completeaza la etapa 10, din sursa
 // oficiala, nu din memorie. Pana atunci aplicatia nu poate fi publicata.
 //
-// Cinci pasi trimit la o institutie si au nevoie de link: frauda, o singura
-// banca, bani peste rezerva, alta moneda si produse neintelese. Ceilalti noua
-// raman fara link, fiecare cu motivul scris (decizia proprietarului, 22.11.2026).
+// Patru pasi trimit la o institutie si au nevoie de link: frauda, o singura
+// banca, bani peste rezerva si produse neintelese. Ceilalti zece raman fara
+// link, fiecare cu motivul scris (deciziile proprietarului din 22.11.2026).
 //
 // Reguli pentru texte: fara produse, emitenti sau banci numite; fara sume,
 // dobanzi sau plafoane; fara indemnuri de a pune bani intr-un produs.
@@ -158,7 +158,13 @@ export const PASI: Readonly<Record<IdPas, ContinutPas>> = {
       "Notați câți bani aveți în fiecare monedă.",
       "Gândiți-vă pentru ce cheltuieli sunt acei bani și în ce monedă le veți plăti.",
     ],
-    ...neverificat,
+    // Fara link: pagina BNR pentru public nu a putut fi verificata, iar fisierul de cursuri nu poate fi
+    // citit de un om. Sursa cursului este verificata (vezi docs/verificari). Textul ramane ciorna.
+    link: null,
+    faraLink: "Pasul vorbeste despre riscul schimbarii cursului, nu despre cursul de azi.",
+    sursa: "BNR, cursuri de referință",
+    verificatLa: "2026-11-22",
+    ciorna: true,
   },
   aur: {
     titlu: "Aur",
@@ -181,7 +187,17 @@ export const PASI: Readonly<Record<IdPas, ContinutPas>> = {
       "Întrebați: pot pierde din bani? Când și cum îi pot scoate? Ce comisioane plătesc?",
       "Nu semnați nimic nou până nu înțelegeți răspunsurile.",
     ],
-    ...neverificat,
+    // Linkul si sursa sunt verificate (vezi docs/verificari). Textul ramane ciorna pana il aproba proprietarul.
+    // Registrele ASF privesc asigurarile, piata de capital si pensiile private, nu produsele bancare.
+    link: {
+      eticheta: "Deschideți registrele ASF",
+      adresa: "https://www.asfromania.ro/ro/a/1544/registre-entit%C4%83%C8%9Bi-autorizate",
+      ceSaCautati:
+        "Pe pagină sunt registrele firmelor autorizate, pe trei grupe: „Asigurări”, „Piață de capital” și „Pensii private”. Pentru un produs de la bancă, întrebați la bancă.",
+    },
+    sursa: "ASF, pagina „Registre entități autorizate”",
+    verificatLa: "2026-11-22",
+    ciorna: true,
   },
   "ordine-in-acte": {
     titlu: "Ordine în acte",
@@ -203,8 +219,12 @@ export const PASI: Readonly<Record<IdPas, ContinutPas>> = {
       "Aflați cât mai este de plătit din împrumutul pentru care ați girat.",
       "Păstrați contractul și orice înscris despre banii împrumutați.",
     ],
-    ...neverificat,
+    // Sursa este verificata din reproduceri neoficiale ale Codului civil (vezi docs/verificari, sectiunea 8).
+    link: null,
     faraLink: "Sursa este Codul civil; un link catre textul legii nu ajuta cititorul.",
+    sursa: "Codul civil, art. 2.280 și 2.293",
+    verificatLa: "2026-11-22",
+    ciorna: true,
   },
   "situatie-neacoperita": {
     titlu: "Lucruri de care planul nu ține cont",

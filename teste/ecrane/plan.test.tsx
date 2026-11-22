@@ -295,7 +295,8 @@ describe("varianta de tiparit", () => {
     expect(text).not.toContain("Banca Vecinului");
     // Nimic socotit: nici rezerva (4 x 2.718), nici totalul, nici vreun "aproximativ".
     expect(text).not.toContain("aproximativ");
-    expect(text.replace(dataRomaneasca(AZI), "")).not.toMatch(/\d\.\d{3}/);
+    // Datele (a intocmirii si ale verificarii surselor) nu sunt sume.
+    expect(text.replace(/\d{2}\.\d{2}\.\d{4}/g, "")).not.toMatch(/\d\.\d{3}/);
     // Cuvantul "lei" poate aparea in explicatii, dar niciodata dupa o cifra.
     expect(text).not.toMatch(/\d\s*(lei|euro|dolari|lire|grame)/);
   });

@@ -79,10 +79,10 @@ describe("validarea continutului pentru publicare", () => {
   });
 
   test("pasii care trimit la o institutie au link in continutul de acum sau sunt inca de completat, niciodata scutiti", () => {
-    for (const id of ["frauda", "o-singura-banca", "bani-peste-rezerva", "alta-moneda", "produse-neintelese"] as const) {
+    for (const id of ["frauda", "o-singura-banca", "bani-peste-rezerva", "produse-neintelese"] as const) {
       expect(PASI[id].faraLink).toBeUndefined();
     }
-    expect(ORDINEA_PASILOR.filter((id) => PASI[id].faraLink !== undefined)).toHaveLength(9);
+    expect(ORDINEA_PASILOR.filter((id) => PASI[id].faraLink !== undefined)).toHaveLength(10);
   });
 
   test("plafonul verificat acum mai mult de 12 luni opreste publicarea", () => {

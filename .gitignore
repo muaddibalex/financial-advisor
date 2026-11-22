@@ -2,3 +2,6 @@ node_modules/
 dist/
 *.local
 .claude/
+
+# Copii ale unor pagini oficiale, salvate pentru citire. Nu se publica.
+/*.pdf

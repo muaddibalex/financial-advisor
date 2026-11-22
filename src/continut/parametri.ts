@@ -15,5 +15,9 @@
 // si cand, iar pentru plafon sursa oficiala si data verificarii.
 
 import type { Parametri } from "../domeniu/tipuri";
+import type { ProvenientaParametri } from "./validare";
 
 export const PARAMETRI: Parametri | null = null;
+
+/** Cine a decis parametrii, cand, si sursa oficiala a plafonului. Se completeaza odata cu ei. */
+export const PROVENIENTA_PARAMETRI: ProvenientaParametri | null = null;

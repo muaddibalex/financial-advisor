@@ -1,7 +1,7 @@
 # Verificari din surse oficiale - etapa 10
 
 Data citirii: 21.11.2026
-Stare: partial. Patru site-uri oficiale nu au putut fi citite (vezi "Necitite"). Nimic din aceasta fisa nu a fost inca trecut in continutul aplicatiei.
+Stare: partial, actualizata la 22.11.2026. Patru site-uri oficiale nu au putut fi citite automat (vezi "Necitite"). Nimic din aceasta fisa nu a fost inca trecut in continutul aplicatiei.
 
 Cum se citeste fisa:
 
@@ -13,26 +13,37 @@ Cum se citeste fisa:
 
 | Site | Ce s-a intamplat | Urmare |
 |---|---|---|
-| fgdb.ro | Citirea automata refuzata (403); browserul din aplicatie il blocheaza prin politica organizatiei | Toata tema FGDB este neconfirmata |
+| fgdb.ro | Citirea automata refuzata (403); browserul din aplicatie il blocheaza prin politica organizatiei | Pagina "Cat garantam" a fost citita la 22.11.2026 dintr-un PDF salvat de proprietar; lista bancilor ramane necitita |
 | eur-lex.europa.eu | Raspuns gol la citirea automata; browserul il blocheaza prin politica organizatiei | Regulamentul (UE) 2017/565 este necitit |
 | dnsc.ro (pagina principala si alertele) | Citirea automata refuzata (403) | Doar pnrisc.dnsc.ro a fost citit |
 | politiaromana.ro | Eroare de certificat la citire | Canalul oficial de plangere este neconfirmat |
 
 Aceste pagini trebuie citite de proprietar, dintr-un browser obisnuit. Blocarea din browserul aplicatiei este o regula a organizatiei si nu a fost ocolita.
 
-## 1. Garantarea depozitelor (FGDB) - NECONFIRMAT
+## 1. Garantarea depozitelor (FGDB) - PARTIAL
 
-Nicio pagina FGDB nu a fost citita. De citit de proprietar:
+Sursa: pagina "Cat garantam" a FGDB, https://fgdb.ro/cat-garantam/, salvata ca PDF de proprietar la 22.11.2026, ora 10:36, si citita din acel PDF. Pagina nu afiseaza o data a ultimei actualizari; subsolul spune "© FGDB 2026".
 
-- https://fgdb.ro/cat-garantam/ - plafonul de garantare si pe ce se aplica (pe deponent, pe banca);
-- regula pentru depozitele in valuta: in ce moneda si la ce curs se plateste compensatia;
-- daca toate conturile si depozitele de la aceeasi banca se aduna;
-- https://www.fgdb.ro/pagini/unde-asiguram - lista institutiilor participante si data ei;
-- ce nu este acoperit.
+Confirmat (22.11.2026):
 
-Rezumatul motorului de cautare (nu este sursa) indica un plafon de 100.000 euro, echivalent in lei, pe deponent si pe banca, cu plata in lei la cursul BNR, si o lista impartita in banci persoane juridice romane si sucursale ale bancilor din alte state UE, garantate de schema tarii de origine. Daca se confirma, ultimul punct schimba lista bancilor din aplicatie: nu toate bancile din Romania sunt garantate de FGDB.
+- Plafonul general: "100 000 €", "echivalent în lei". "Banii fiecărui deponent la bancă sunt garantați până la 100.000 de Euro."
+- Pe ce se aplica: compensatia este de "maximum 100.000 Euro/persoană/ bancă"; "Nivelul de garantare este calculat per deponent, per bancă."
+- Valuta: "Compensațiile vor fi plătite în lei la cursul BNR din ziua în care sumele depuse la bancă nu mai pot fi rambursate deponenților, indiferent de moneda în care a fost constituit depozitul."
+- Plafonul suplimentar: inca 100.000 euro, cumulat cu cel general, "pentru o perioadă de 12 luni", pentru sume care vin din tranzactii imobiliare cu locuinte, din pensionare, disponibilizare, casatorie, divort, invaliditate sau deces, ori din indemnizatii de asigurare si compensatii pentru daune din infractiuni sau condamnari pe nedrept.
+- Nu exista o valoare minima de la care se platesc compensatii, nici pentru conturile fara miscare in ultimele 24 de luni.
 
-Parametrul `plafonGarantareEur` ramane necompletat pana la citirea paginii.
+Neconfirmat:
+
+- lista institutiilor participante si data ei (este pe alta pagina, "Unde garantam", necitita);
+- ce nu este acoperit (pagina "Ce garantam", necitita);
+- daca toate conturile si depozitele unui om la aceeasi banca se aduna. Formularea "per deponent, per bancă" o sugereaza, dar pagina citita nu o spune explicit.
+
+Urmari pentru aplicatie:
+
+- `plafonGarantareEur` = 100000, verificat la 2026-11-22, sursa: pagina de mai sus. Se trece in `parametri.ts` odata cu ceilalti trei parametri, care sunt decizia proprietarului.
+- Compensatia se socoteste la cursul BNR al zilei, iar aplicatia foloseste media lunii anterioare. Diferenta dintre ele este exact ce trebuie sa acopere marja aleasa de proprietar.
+- Plafonul suplimentar priveste direct publicul aplicatiei (bani din pensionare sau din vanzarea unei locuinte). Aplicatia nu il ia in calcul: pasul despre o singura banca poate aparea si cuiva care este acoperit temporar de plafonul suplimentar. Fiindca pasul doar trimite omul sa verifice, nu este o eroare, dar textul pasului ar trebui sa pomeneasca plafonul suplimentar. De hotarat de proprietar la citirea textelor.
+- Linkul pasului despre o singura banca a fost completat cu aceasta pagina.
 
 ## 2. Consultanta de investitii - PARTIAL
 
@@ -101,3 +112,9 @@ Textele pasilor nu mentioneaza impozite pe dobanzi sau pe vanzarea aurului. Daca
 2. Proprietarul citeste art. 9 din Regulamentul (UE) 2017/565 si anexa nr. 1 din Legea nr. 126/2018, sau cere un punct de vedere, si decide asupra incadrarii.
 3. Proprietarul citeste pe dnsc.ro pentru ce este linia 1911 si pe politiaromana.ro cum se depune o plangere.
 4. Se cauta o pagina oficiala de ansamblu pentru ajutoare; in lipsa ei, pasul 2 trimite la primarie.
+
+## Decizii ale proprietarului (22.11.2026)
+
+- **Incadrarea ASF:** construirea continua, proprietarul intreaba ASF, iar aplicatia nu ajunge la nimeni pana la raspuns. Decizia este trecuta in `src/continut/incadrare.ts`; verificarea de publicare (`npm run verifica-continut`) refuza continutul cat timp incadrarea nu este marcata ca lamurita.
+- **Foaia tiparita:** titlurile pasilor raman pe foaie, inclusiv "Bani tinuti in casa".
+- **FGDB:** la 22.11.2026 pagina este in continuare blocata in browserul aplicatiei. Proprietarul a salvat pagina "Cat garantam" ca PDF, din care a fost citita (vezi sectiunea 1).

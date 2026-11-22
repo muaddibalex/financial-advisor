@@ -10,7 +10,8 @@
     "test": "vitest run",
     "lint": "eslint .",
     "cursuri": "node scripts/cursuri-lunare.ts",
-    "verifica-build": "node scripts/verifica-build.ts"
+    "verifica-build": "node scripts/verifica-build.ts",
+    "verifica-continut": "node scripts/verifica-continut.ts"
   },
   "dependencies": {
     "preact": "^11.2.0"

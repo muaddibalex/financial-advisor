@@ -105,7 +105,15 @@ export const PASI: Readonly<Record<IdPas, ContinutPas>> = {
       "Aflați, din sursa oficială, care este suma garantată.",
       "Comparați cu ce aveți la aceeași bancă, în toate conturile și depozitele la un loc.",
     ],
-    ...neverificat,
+    // Linkul si sursa sunt verificate (vezi docs/verificari). Textul ramane ciorna pana il aproba proprietarul.
+    link: {
+      eticheta: "Deschideți pagina oficială FGDB",
+      adresa: "https://fgdb.ro/cat-garantam/",
+      ceSaCautati: "Pe pagină, căutați titlul „Plafonul general de acoperire”.",
+    },
+    sursa: "FGDB, pagina „Cât garantăm”",
+    verificatLa: "2026-11-22",
+    ciorna: true,
   },
   "bani-peste-rezerva": {
     titlu: "Bani peste rezerva pentru urgențe",

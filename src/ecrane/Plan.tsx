@@ -19,7 +19,7 @@ type Proprietati = {
 
 /** Textul comun tuturor pasilor. Este text de interfata, nu textul unui pas. */
 export const NU_ALEGE = "Aplicația nu vă spune ce să alegeți. Hotărâți dumneavoastră, fără grabă.";
-export const VERSIUNE_DE_PROBA = "Versiune de probă. Textele nu sunt încă verificate din surse oficiale.";
+export const VERSIUNE_DE_PROBA = "Versiune de probă. Nu toate textele sunt verificate.";
 
 function titlul(plan: PlanCalculat): string {
   if (plan.pasi.length === 0) return "Din răspunsuri nu a reieșit niciun pas de făcut";

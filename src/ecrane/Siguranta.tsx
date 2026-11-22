@@ -1,8 +1,9 @@
 // Ecranele permanente: "Siguranta" si "Stergeti tot", plus butoanele din
 // subsol prin care se ajunge la ele de pe orice ecran.
 //
-// CIORNA: textul despre semnele de frauda este o prima forma. Numerele si
-// canalele oficiale de raportare lipsesc intentionat pana la etapa 10.
+// Textul ecranului "Siguranta" a fost aprobat de proprietar la 22.11.2026.
+// Nu contine numere de telefon: numarul 1911 al DNSC nu a putut fi verificat
+// pentru inselatoriile prin telefon (vezi docs/verificari).
 
 import { useState } from "preact/hooks";
 
@@ -48,6 +49,7 @@ export function Siguranta({ onInapoi }: { onInapoi: () => void }) {
         <ul>
           <li>Închideți telefonul. Nu sunteți nepoliticos.</li>
           <li>Sunați dumneavoastră banca, la numărul scris pe card.</li>
+          <li>Dacă ați spus deja coduri sau datele cardului, cereți băncii să blocheze cardul.</li>
           <li>Vorbiți cu cineva de încredere înainte de a face orice.</li>
         </ul>
       </div>

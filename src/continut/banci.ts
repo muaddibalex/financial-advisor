@@ -1,12 +1,13 @@
 // Lista bancilor din care alege omul la intrebarea 5.
 //
 // Sursa: FGDB, pagina "Unde garantam", https://fgdb.ro/unde-garantam/, citita la
-// 22.11.2026 dintr-un PDF salvat de proprietar (vezi docs/verificari).
+// 22.11.2026: intai dintr-un PDF salvat de proprietar, apoi din textul paginii,
+// copiat de proprietar, care a completat randurile ascunse in PDF
+// (vezi docs/verificari). Lista cuprinde toate bancile de pe pagina:
+// 19 banci romanesti si 10 sucursale ale bancilor din alte state UE.
 //
-// CIORNA: lista este INCOMPLETA. In PDF, randuri au ramas ascunse la trecerea
-// dintre pagini (intre Exim Banca Romaneasca si Patria Bank, si intre ING Bank
-// si TBI Bank). Bancile lipsa nu se completeaza din memorie. Pana atunci, omul
-// le poate scrie la "Alta banca".
+// Numele sunt cele de pe pagina, scrise pe scurt, fara "S.A." si fara
+// "Sucursala Bucuresti". Lista se verifica din nou cel tarziu la 12 luni.
 //
 // Bancile sunt de doua feluri (pagina FGDB):
 //  - persoane juridice romane: participa la FGDB;
@@ -31,7 +32,7 @@ const fgdb = (id: string, nume: string): BancaDinLista => ({ id, nume, schema: "
 const altStat = (id: string, nume: string): BancaDinLista => ({ id, nume, schema: "alt-stat-ue" });
 
 export const BANCI: ListaBanci = {
-  ciorna: true,
+  ciorna: false,
   sursa: "FGDB, pagina „Unde garantăm”",
   verificatLa: "2026-11-22",
   banci: [
@@ -43,6 +44,8 @@ export const BANCI: ListaBanci = {
     fgdb("brd", "BRD – Groupe Société Générale"),
     fgdb("cec-bank", "CEC Bank"),
     fgdb("exim-banca-romaneasca", "Exim Banca Românească"),
+    fgdb("garanti-bank", "Garanti Bank"),
+    fgdb("libra-internet-bank", "Libra Internet Bank"),
     fgdb("patria-bank", "Patria Bank"),
     fgdb("credex-bank", "Credex Bank (fostă Porsche Bank România)"),
     fgdb("procredit-bank", "ProCredit Bank"),
@@ -53,8 +56,11 @@ export const BANCI: ListaBanci = {
     fgdb("vista-bank", "Vista Bank"),
     fgdb("creditcoop", "Banca Centrală Cooperatistă Creditcoop"),
     altStat("ing-bank", "ING Bank"),
+    altStat("banque-banorient", "Banque Banorient France"),
+    altStat("citibank-europe", "Citibank Europe"),
     altStat("tbi-bank", "TBI Bank"),
-    altStat("bnp-paribas-personal-finance", "BNP Paribas Personal Finance"),
+    // Asa scrie pagina FGDB: "BNP PARIBAS PERSONAL FRANCE S.A." Numele nu este corectat din memorie.
+    altStat("bnp-paribas-personal-france", "BNP Paribas Personal France"),
     altStat("bnp-paribas", "BNP Paribas"),
     altStat("bank-of-china", "Bank of China"),
     altStat("pko-bank-polski", "PKO Bank Polski"),
@@ -70,7 +76,7 @@ export function banciInOrdine(banci: readonly BancaDinLista[]): readonly BancaDi
 
 /**
  * Ce i se spune omului care are bani la sucursale ale unor banci din alte state UE.
- * CIORNA: text de aprobat de proprietar, odata cu textele pasilor.
+ * Text aprobat de proprietar la 22.11.2026, odata cu textele pasilor.
  */
 export function textSucursale(nume: readonly string[]): string | null {
   if (nume.length === 0) return null;

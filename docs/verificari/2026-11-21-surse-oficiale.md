@@ -44,26 +44,26 @@ Urmari pentru aplicatie:
 - Plafonul suplimentar priveste direct publicul aplicatiei (bani din pensionare sau din vanzarea unei locuinte). Aplicatia nu il ia in calcul: pasul despre o singura banca poate aparea si cuiva care este acoperit temporar de plafonul suplimentar. Fiindca pasul doar trimite omul sa verifice, nu este o eroare, dar textul pasului ar trebui sa pomeneasca plafonul suplimentar. De hotarat de proprietar la citirea textelor.
 - Linkul pasului despre o singura banca a fost completat cu aceasta pagina.
 
-### Lista bancilor - PARTIAL
+### Lista bancilor - CONFIRMAT
 
-Sursa: pagina "Unde garantam" a FGDB, https://fgdb.ro/unde-garantam/, salvata ca PDF de proprietar la 22.11.2026, ora 11:25. Pagina nu afiseaza o data a listei.
+Sursa: pagina "Unde garantam" a FGDB, https://fgdb.ro/unde-garantam/, citita la 22.11.2026: intai dintr-un PDF salvat de proprietar (ora 11:25), apoi din textul paginii, copiat de proprietar in aceeasi zi, care a completat randurile ascunse in PDF. Pagina nu afiseaza o data a listei.
 
 Confirmat:
 
 - "Toate băncile au obligația legală de a participa la o schemă de garantare a depozitelor." "Băncile care au statut de persoană juridică română participă la FGDB."
-- "Depozitele deschise la sucursalele băncilor din state membre ale Uniunii Europene sunt garantate în țările de origine." FGDB plateste compensatiile catre deponentii acestor sucursale in numele schemei din statul de origine, dupa ce aceasta pune la dispozitie finantarea.
-- Banci persoane juridice romane vizibile in PDF: Banca Comerciala Romana, BCR Banca pentru Locuinte, Banca Comerciala Intesa Sanpaolo Romania, Banca Romana de Credite si Investitii, Banca Transilvania, BRD - Groupe Societe Generale, CEC Bank, Exim Banca Romaneasca, Patria Bank, Credex Bank (fosta Porsche Bank Romania), ProCredit Bank, Raiffeisen Bank, Salt Bank (fosta Idea Bank), TechVentures Bank, UniCredit Bank, Vista Bank, Banca Centrala Cooperatista Creditcoop.
-- Sucursale ale bancilor din alte state UE vizibile in PDF: ING Bank N.V. Amsterdam, TBI Bank EAD Sofia, BNP Paribas Personal Finance S.A. Paris, BNP Paribas S.A. Paris, Bank of China (Central and Eastern Europe) Limited, PKO Bank Polski S.A. Varsovia, Revolut Bank UAB Vilnius, Nexent Bank N.V. Amsterdam (fosta Credit Europe Bank N.V., din 27.06.2025).
+- "Depozitele deschise la sucursalele băncilor din state membre ale Uniunii Europene sunt garantate în țările de origine." FGDB plateste compensatiile catre deponentii acestor sucursale in numele schemei din statul de origine, dupa ce aceasta pune la dispozitie finantarea, si in moneda in care a fost acordata finantarea.
+- 19 banci persoane juridice romane: Banca Comerciala Romana, BCR Banca pentru Locuinte, Banca Comerciala Intesa Sanpaolo Romania, Banca Romana de Credite si Investitii, Banca Transilvania, BRD - Groupe Societe Generale, CEC Bank, Exim Banca Romaneasca, Garanti Bank, Libra Internet Bank, Patria Bank, Credex Bank (fosta Porsche Bank Romania), ProCredit Bank, Raiffeisen Bank, Salt Bank (fosta Idea Bank), TechVentures Bank, UniCredit Bank, Vista Bank, Banca Centrala Cooperatista Creditcoop.
+- 10 sucursale ale bancilor din alte state UE: ING Bank N.V. Amsterdam, Banque Banorient France S.A., Citibank Europe plc Dublin, TBI Bank EAD Sofia, BNP Paribas Personal France S.A. Paris, BNP Paribas S.A. Paris, Bank of China (Central and Eastern Europe) Limited, PKO Bank Polski S.A. Varsovia, Revolut Bank UAB Vilnius, Nexent Bank N.V. Amsterdam (fosta Credit Europe Bank N.V., din 27.06.2025).
+- Pagina scrie "BNP PARIBAS PERSONAL FRANCE S.A.". Poate fi o greseala de scriere a paginii; numele din aplicatie il urmeaza pe cel de pe pagina si nu a fost corectat din memorie. De hotarat de proprietar.
 
 Neconfirmat:
 
-- **Lista nu este completa in PDF.** La trecerea de la pagina 1 la pagina 2 (intre Exim Banca Romaneasca si Patria Bank) si de la pagina 2 la pagina 3 (intre ING Bank si TBI Bank), randuri din lista au ramas ascunse sub antetul paginii. Bancile lipsa nu se completeaza din memorie.
 - plafonul schemelor din alte state UE: pagina nu il spune.
 
 Urmari pentru aplicatie:
 
-- `banci.ts` ramane ciorna pana cand lista este completa (proprietarul copiaza textul listei de pe pagina).
-- Lista din aplicatie trebuie sa cuprinda ambele grupe, fiindca oamenii au conturi si la sucursale ale bancilor straine. Pentru acestea, depozitele sunt garantate de schema tarii de origine, nu de FGDB; textul pasului despre o singura banca nu spune inca asta. De hotarat de proprietar.
+- `banci.ts` cuprinde toate cele 29 de banci, fiecare cu schema ei de garantare, si nu mai este ciorna. Lista se verifica din nou cel tarziu la 22.11.2027.
+- Pentru sucursalele straine, pasul despre o singura banca spune ca garantarea tine de tara de origine (decizia proprietarului, 22.11.2026).
 
 ## 2. Consultanta de investitii - PARTIAL
 
@@ -178,10 +178,19 @@ Urmare: afirmatia din pasul "girant" ("datoria poate fi ceruta de la dumneavoast
 3. Proprietarul citeste pe dnsc.ro pentru ce este linia 1911 si pe politiaromana.ro cum se depune o plangere.
 4. Se cauta o pagina oficiala de ansamblu pentru ajutoare; in lipsa ei, pasul 2 trimite la primarie.
 6. Optional: forma oficiala la zi a art. 2.280 si 2.293 din Codul civil, de pe Portalul Legislativ.
-7. Lista bancilor: textul complet al listei de pe pagina FGDB "Unde garantam", copiat de proprietar (PDF-ul are randuri ascunse la trecerea dintre pagini).
 
 ## Decizii ale proprietarului (22.11.2026)
 
 - **Incadrarea ASF:** construirea continua, proprietarul intreaba ASF, iar aplicatia nu ajunge la nimeni pana la raspuns. Decizia este trecuta in `src/continut/incadrare.ts`; verificarea de publicare (`npm run verifica-continut`) refuza continutul cat timp incadrarea nu este marcata ca lamurita.
 - **Foaia tiparita:** titlurile pasilor raman pe foaie, inclusiv "Bani tinuti in casa".
 - **FGDB:** la 22.11.2026 pagina este in continuare blocata in browserul aplicatiei. Proprietarul a salvat pagina "Cat garantam" ca PDF, din care a fost citita (vezi sectiunea 1).
+
+## Aprobarea textelor (22.11.2026)
+
+Proprietarul a aprobat, dupa o revizuire recomandata la cererea lui:
+
+- textele a 13 pasi (toti in afara de "Bani peste rezerva");
+- propozitia despre sucursalele bancilor din alte state UE;
+- textul ecranului "Siguranta".
+
+Ramane neaprobat pasul "Bani peste rezerva", al carui text si link depind de raspunsul ASF. Orice schimbare de text dupa aceasta data se aproba din nou.

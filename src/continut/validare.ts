@@ -90,9 +90,18 @@ export function valideazaContinut(c: Continut, azi: string): readonly string[] {
 
   for (const [id, pas] of Object.entries(c.pasi) as [IdPas, ContinutPas][]) {
     if (pas.ciorna) probleme.push(`pasul ${id}: text marcat CIORNA`);
-    if (!areText(pas.sursa) || !esteData(pas.verificatLa)) probleme.push(`pasul ${id}: lipseste sursa sau data verificarii`);
+    const faraLink = pas.faraLink !== undefined;
+    if (faraLink && !areText(pas.faraLink)) probleme.push(`pasul ${id}: motivul pentru lipsa linkului este gol`);
+    if (faraLink && pas.link !== null) probleme.push(`pasul ${id}: are si link, si motiv pentru lipsa linkului`);
+
+    // Un pas cu link are mereu sursa si data. Un pas fara link poate fi un sfat
+    // general, fara sursa; daca are totusi o sursa, are si data verificarii.
+    const areSursa = areText(pas.sursa);
+    if (!faraLink && (!areSursa || !esteData(pas.verificatLa))) probleme.push(`pasul ${id}: lipseste sursa sau data verificarii`);
+    if (faraLink && areSursa && !esteData(pas.verificatLa)) probleme.push(`pasul ${id}: sursa nu are data verificarii`);
+
     if (pas.link === null) {
-      probleme.push(`pasul ${id}: lipseste linkul oficial`);
+      if (!faraLink) probleme.push(`pasul ${id}: lipseste linkul oficial`);
     } else {
       if (!pas.link.adresa.startsWith("https://")) probleme.push(`pasul ${id}: linkul nu incepe cu https://`);
       if (!areText(pas.link.eticheta) || !areText(pas.link.ceSaCautati)) probleme.push(`pasul ${id}: linkul nu spune ce sa cautati pe pagina`);

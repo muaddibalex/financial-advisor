@@ -6,6 +6,10 @@
 // de verificare lipsesc intentionat: se completeaza la etapa 10, din sursa
 // oficiala, nu din memorie. Pana atunci aplicatia nu poate fi publicata.
 //
+// Cinci pasi trimit la o institutie si au nevoie de link: frauda, o singura
+// banca, bani peste rezerva, alta moneda si produse neintelese. Ceilalti noua
+// raman fara link, fiecare cu motivul scris (decizia proprietarului, 22.11.2026).
+//
 // Reguli pentru texte: fara produse, emitenti sau banci numite; fara sume,
 // dobanzi sau plafoane; fara indemnuri de a pune bani intr-un produs.
 
@@ -25,6 +29,12 @@ export type ContinutPas = {
   readonly deCe: string;
   readonly cePutetiFace: readonly string[];
   readonly link: LinkOficial | null;
+  /**
+   * De ce pasul nu are link, cand lipsa este o alegere: pasul este un sfat de
+   * organizare sau nu exista o pagina oficiala potrivita. Fara acest motiv,
+   * un pas fara link este socotit neterminat.
+   */
+  readonly faraLink?: string;
   readonly sursa: string | null;
   /** Data verificarii, AAAA-LL-ZZ. */
   readonly verificatLa: string | null;
@@ -45,7 +55,15 @@ export const PASI: Readonly<Record<IdPas, ContinutPas>> = {
       "Închideți și sunați dumneavoastră banca, la numărul scris pe card.",
       "Vorbiți cu cineva de încredere înainte de a face orice.",
     ],
-    ...neverificat,
+    // Linkul si sursa sunt verificate (vezi docs/verificari). Textul ramane ciorna pana il aproba proprietarul.
+    link: {
+      eticheta: "Deschideți pagina „Ce fac în caz de fraudă”",
+      adresa: "https://sigurantaonline.ro/ce-fac-in-caz-de-frauda/",
+      ceSaCautati: "Pe pagină, căutați situația care seamănă cu a dumneavoastră.",
+    },
+    sursa: "Campania #SigurantaOnline, inițiată de Poliția Română, DNSC și ARB",
+    verificatLa: "2026-11-21",
+    ciorna: true,
   },
   "luna-nu-se-inchide": {
     titlu: "Banii nu ajung până la sfârșitul lunii",
@@ -56,6 +74,7 @@ export const PASI: Readonly<Record<IdPas, ContinutPas>> = {
       "Aflați dacă aveți dreptul la ajutoare sau reduceri, de la stat ori de la primărie.",
     ],
     ...neverificat,
+    faraLink: "Nu exista o pagina oficiala de ansamblu cu ajutoarele pentru varstnici; textul trimite la primarie.",
   },
   "datorii-scumpe": {
     titlu: "Datorii la IFN sau pe card",
@@ -66,6 +85,7 @@ export const PASI: Readonly<Record<IdPas, ContinutPas>> = {
       "Comparați dobânda datoriei cu dobânda pe care o primiți la economii.",
     ],
     ...neverificat,
+    faraLink: "Este un rationament de aritmetica, nu regula unei institutii.",
   },
   "bani-pentru-urgente": {
     titlu: "Bani pentru urgențe",
@@ -76,6 +96,7 @@ export const PASI: Readonly<Record<IdPas, ContinutPas>> = {
       "Comparați cu banii pe care îi aveți acasă și în cont.",
     ],
     ...neverificat,
+    faraLink: "Rezerva pentru urgente este o conventie, fara sursa oficiala.",
   },
   "cheltuiala-apropiata": {
     titlu: "Cheltuiala mare din următorul an",
@@ -86,6 +107,7 @@ export const PASI: Readonly<Record<IdPas, ContinutPas>> = {
       "Înainte de a pune bani undeva, întrebați ce se întâmplă dacă îi scoateți mai devreme.",
     ],
     ...neverificat,
+    faraLink: "Sfat de organizare.",
   },
   "bani-in-casa": {
     titlu: "Bani ținuți în casă",
@@ -96,6 +118,7 @@ export const PASI: Readonly<Record<IdPas, ContinutPas>> = {
       "Pentru rest există, ca feluri de păstrare, contul și depozitul la bancă.",
     ],
     ...neverificat,
+    faraLink: "Sfat de organizare.",
   },
   "o-singura-banca": {
     titlu: "Toți banii la o singură bancă",
@@ -147,6 +170,7 @@ export const PASI: Readonly<Record<IdPas, ContinutPas>> = {
       "Înainte de o vânzare, întrebați în mai multe locuri și cereți prețul în scris.",
     ],
     ...neverificat,
+    faraLink: "Nicio pagina oficiala potrivita; textul nu vorbeste despre impozite.",
   },
   "produse-neintelese": {
     titlu: "Produse pe care nu le înțelegeți",
@@ -169,6 +193,7 @@ export const PASI: Readonly<Record<IdPas, ContinutPas>> = {
       "Spuneți unei persoane de încredere unde este foaia. Este destul să știe unde sunt banii; nu are nevoie să poată umbla la ei.",
     ],
     ...neverificat,
+    faraLink: "Sfat de organizare.",
   },
   girant: {
     titlu: "Ați girat sau ați împrumutat bani",
@@ -179,6 +204,7 @@ export const PASI: Readonly<Record<IdPas, ContinutPas>> = {
       "Păstrați contractul și orice înscris despre banii împrumutați.",
     ],
     ...neverificat,
+    faraLink: "Sursa este Codul civil; un link catre textul legii nu ajuta cititorul.",
   },
   "situatie-neacoperita": {
     titlu: "Lucruri de care planul nu ține cont",
@@ -186,6 +212,7 @@ export const PASI: Readonly<Record<IdPas, ContinutPas>> = {
     deCe: "Ați spus că aveți și altceva: chirii încasate, o moștenire în curs, bani de recuperat sau o afacere. Aplicația nu știe nimic despre ele, deci planul nu le ia în seamă.",
     cePutetiFace: ["Vorbiți despre ele cu cineva de încredere."],
     ...neverificat,
+    faraLink: "Pasul spune doar ca aplicatia nu acopera acele lucruri.",
   },
 };
 

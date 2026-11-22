@@ -96,7 +96,9 @@ Reguli generale:
 
 - Datoriile la banca si catre persoane nu produc niciun pas in prima versiune. Este o alegere, nu o scapare: fara dobanda si termen, aplicatia nu poate spune nimic util despre ele.
 - Daca lista de pasi este goala, aplicatia afiseaza un mesaj neutru: din raspunsuri nu a reiesit niciun pas de facut, iar aplicatia verifica doar cateva lucruri de baza. Nu spune ca "totul este in ordine".
-- Fiecare pas are: de ce conteaza, ce puteti face, link oficial cu "ce sa cautati pe pagina", sursa si data verificarii, si mentiunea ca aplicatia nu alege in locul omului.
+- Fiecare pas are: de ce conteaza, ce puteti face si mentiunea ca aplicatia nu alege in locul omului.
+- Pasii care trimit omul la o institutie au link oficial cu "ce sa cautati pe pagina", sursa si data verificarii: 1 (frauda), 7 (o singura banca), 8 (bani peste rezerva), 9 (alta moneda) si 11 (produse neintelese).
+- Ceilalti noua pasi sunt sfaturi de organizare sau nu au o pagina oficiala potrivita si raman fara link, fiecare cu motivul scris in fisierul de continut. Pe ecran, un astfel de pas spune deschis ca este un sfat general si ca nu vine dintr-o sursa oficiala. Daca un pas fara link se sprijina totusi pe o sursa (de exemplu o lege), sursa si data verificarii se noteaza. (Schimbare decisa de proprietar la 22.11.2026; initial fiecare pas avea link.)
 - Omul poate bifa un pas ca facut. Bifa este declaratia lui, nu o verificare.
 
 ### Parametri de continut

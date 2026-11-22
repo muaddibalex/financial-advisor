@@ -10,7 +10,7 @@ import { EcranAlegere, EcranCheltuialaMare, EcranDaNu, EcranDatorii, EcranSuma, 
 import { ListaLocuri } from "./ecrane/ListaLocuri";
 import { Plan } from "./ecrane/Plan";
 import { Siguranta, StergeTot, Subsol } from "./ecrane/Siguranta";
-import { cifrelePasului, construiestePlan } from "./plan/plan";
+import { cifrelePasului, construiestePlan, notelePasului } from "./plan/plan";
 import { creeazaStocare, type Stocare } from "./stocare/stocare";
 import { STARE_GOALA, esteComplet, type RaspunsuriPartiale, type StareSalvata } from "./stocare/validare";
 
@@ -213,6 +213,7 @@ export function App({
           key={pas.id}
           pas={pas}
           cifre={cifrelePasului(pas, raspunsuri, cursuri, parametri)}
+          note={notelePasului(pas, raspunsuri, BANCI.banci)}
           onInapoi={() => setEcran({ fel: "plan" })}
           onBifeaza={(facut) => bifeaza(pas.id, facut)}
         />,

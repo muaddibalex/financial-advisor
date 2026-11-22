@@ -2,6 +2,7 @@
 // bifele si cu starea cursului valutar. Functii pure.
 
 import { formateazaSuma } from "../chestionar/suma";
+import { textSucursale, type BancaDinLista } from "../continut/banci";
 import { stareCursuri } from "../cursuri/vechime";
 import { baniAccesibili, numerarAcasa, rezervaTinta } from "../domeniu/marimi";
 import { calculeazaPasi } from "../domeniu/reguli";
@@ -85,6 +86,25 @@ export function cifrelePasului(pas: Pas, r: Raspunsuri, cursuri: Cursuri | null,
     return acasa.fel === "lipsa" ? [] : [`Bani ținuți în casă: ${aproximativ(acasa.lei)}.`];
   }
   return [];
+}
+
+/**
+ * Ce mai trebuie spus omului la un pas, pe langa textul pasului.
+ * Deocamdata doar la pasul despre o singura banca: daca are bani la sucursale ale
+ * unor banci din alte state UE, depozitele de acolo nu sunt garantate de FGDB.
+ * O banca scrisa de mana ("Alta banca") nu poate fi recunoscuta si nu produce nicio nota.
+ */
+export function notelePasului(pas: Pas, r: Raspunsuri, banci: readonly BancaDinLista[]): readonly string[] {
+  if (pas.id !== "o-singura-banca") return [];
+  const nume: string[] = [];
+  for (const rand of r.locuri) {
+    if ((rand.tip !== "cont" && rand.tip !== "depozit") || rand.banca.fel !== "lista") continue;
+    const id = rand.banca.id;
+    const banca = banci.find((b) => b.id === id);
+    if (banca?.schema === "alt-stat-ue" && !nume.includes(banca.nume)) nume.push(banca.nume);
+  }
+  const text = textSucursale(nume);
+  return text === null ? [] : [text];
 }
 
 /** "2026-11-21" -> "21.11.2026". */

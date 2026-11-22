@@ -2,7 +2,7 @@
 // Trei ecrane: lista, alegerea felului de loc si detaliile unui loc.
 
 import { useState } from "preact/hooks";
-import type { BancaDinLista } from "../continut/banci";
+import { banciInOrdine, type BancaDinLista } from "../continut/banci";
 import { FORME_DE_AUR, TIPURI_DE_LOC, etichetaTipului, type IntrebareLocuri } from "../continut/intrebari";
 import { MESAJ_EROARE, formateazaNumar, formateazaSuma, interpreteazaSuma } from "../chestionar/suma";
 import { afisareTotal, numeleLunii } from "../chestionar/total";
@@ -195,7 +195,7 @@ function Detalii({
           <label for="banca">La ce bancă?</label>
           <select id="banca" value={ciorna.banca} onChange={(e) => schimba({ banca: e.currentTarget.value })}>
             <option value="">Alegeți banca</option>
-            {banci.map((b) => (
+            {banciInOrdine(banci).map((b) => (
               <option value={b.id}>{b.nume}</option>
             ))}
             <option value={ALTA_BANCA}>Altă bancă</option>

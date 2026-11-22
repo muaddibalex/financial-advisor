@@ -5,7 +5,8 @@ import { PASI } from "../../src/continut/pasi";
 import type { RezultatCursuri } from "../../src/cursuri/incarcare";
 import { ORDINEA_PASILOR } from "../../src/domeniu/reguli";
 import { LIPSA, type Cursuri, type Parametri, type Raspunsuri } from "../../src/domeniu/tipuri";
-import { cifrelePasului, construiestePlan, dataRomaneasca } from "../../src/plan/plan";
+import { BANCI, textSucursale } from "../../src/continut/banci";
+import { cifrelePasului, construiestePlan, dataRomaneasca, notelePasului } from "../../src/plan/plan";
 import { PREFIX, creeazaStocare, depozitInMemorie, type Depozit, type Stocare } from "../../src/stocare/stocare";
 import type { StareSalvata } from "../../src/stocare/validare";
 import { AZI, baza, cursuriTest, parametriTest, suma } from "../fixturi/situatii";
@@ -261,6 +262,74 @@ describe("cifrele pasului", () => {
     const ids = construiestePlan(toate, cursuriTest, parametriTest, AZI, []).pasi.map((p) => p.id);
     expect(ids).toEqual(ORDINEA_PASILOR.filter((id) => ids.includes(id)));
     expect(ids.length).toBeGreaterThan(10);
+  });
+});
+
+describe("sucursalele bancilor din alte state UE", () => {
+  const laBanca = (id: string): Raspunsuri => ({ ...baza, locuri: [{ tip: "depozit", suma: suma(95000), banca: { fel: "lista", id } }] });
+  const pasBanca = { id: "o-singura-banca", forma: "calculata" } as const;
+
+  test("o sucursala straina: pasul spune ca garantarea tine de tara de origine", async () => {
+    porneste({ raspunsuri: laBanca("ing-bank") });
+    await laPlan(/de făcut/);
+    apasa(new RegExp(PASI["o-singura-banca"].titlu));
+    const nota = screen.getByRole("note").textContent ?? "";
+    expect(nota).toContain("ING Bank este sucursala unei bănci din alt stat al Uniunii Europene");
+    expect(nota).toContain("nu de FGDB");
+    expect(nota).toContain("Întrebați banca");
+    // Nimic despre plafon si nicio suma.
+    expect(nota).not.toMatch(/\d/);
+  });
+
+  test("o banca romaneasca: fara nicio nota", async () => {
+    porneste({ raspunsuri: laBanca("cec-bank") });
+    await laPlan(/de făcut/);
+    apasa(new RegExp(PASI["o-singura-banca"].titlu));
+    expect(screen.queryByRole("note")).toBeNull();
+  });
+
+  test("o banca scrisa de mana nu poate fi recunoscuta: fara nota", () => {
+    const r: Raspunsuri = { ...baza, locuri: [{ tip: "cont", suma: suma(1), banca: { fel: "alta", nume: "ING Bank" } }] };
+    expect(notelePasului(pasBanca, r, BANCI.banci)).toEqual([]);
+  });
+
+  test("doua sucursale: amandoua numite o singura data, in ordinea raspunsurilor", () => {
+    const r: Raspunsuri = {
+      ...baza,
+      locuri: [
+        { tip: "cont", suma: suma(1), banca: { fel: "lista", id: "revolut-bank" } },
+        { tip: "depozit", suma: suma(1), banca: { fel: "lista", id: "ing-bank" } },
+        { tip: "depozit", suma: suma(1), banca: { fel: "lista", id: "revolut-bank" } },
+        { tip: "cont", suma: suma(1), banca: { fel: "lista", id: "brd" } },
+      ],
+    };
+    const [nota] = notelePasului(pasBanca, r, BANCI.banci);
+    expect(nota).toContain("Revolut Bank și ING Bank sunt sucursale ale unor bănci din alte state");
+    expect(nota).not.toContain("BRD");
+  });
+
+  test("nota apare doar la pasul despre o singura banca", () => {
+    for (const id of ORDINEA_PASILOR.filter((p) => p !== "o-singura-banca")) {
+      expect(notelePasului({ id, forma: "calculata" }, laBanca("ing-bank"), BANCI.banci)).toEqual([]);
+    }
+  });
+
+  test("textul pentru sucursale: niciuna, una, trei", () => {
+    expect(textSucursale([])).toBeNull();
+    expect(textSucursale(["A"])).toContain("A este sucursala unei bănci");
+    expect(textSucursale(["A", "B", "C"])).toContain("A, B și C sunt sucursale");
+  });
+
+  test("foaia tiparita nu numeste banca omului", async () => {
+    porneste({ raspunsuri: laBanca("ing-bank") });
+    await laPlan(/de făcut/);
+    expect(deTiparit()).not.toContain("ING");
+  });
+
+  test("lista are ambele feluri de banci, fiecare cu id unic", () => {
+    expect(BANCI.banci.some((b) => b.schema === "fgdb")).toBe(true);
+    expect(BANCI.banci.some((b) => b.schema === "alt-stat-ue")).toBe(true);
+    expect(new Set(BANCI.banci.map((b) => b.id)).size).toBe(BANCI.banci.length);
   });
 });
 

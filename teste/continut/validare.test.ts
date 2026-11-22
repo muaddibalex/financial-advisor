@@ -21,7 +21,15 @@ const pasiVerificati = Object.fromEntries(ORDINEA_PASILOR.map((id) => [id, verif
 
 const bun: Continut = {
   pasi: pasiVerificati,
-  banci: { ciorna: false, sursa: "Sursa de test", verificatLa: "2026-11-01", banci: [{ id: "a", nume: "Banca de test" }] },
+  banci: {
+    ciorna: false,
+    sursa: "Sursa de test",
+    verificatLa: "2026-11-01",
+    banci: [
+      { id: "a", nume: "Banca de test", schema: "fgdb" },
+      { id: "b", nume: "Sucursala de test", schema: "alt-stat-ue" },
+    ],
+  },
   parametri: parametriTest,
   provenienta: { decisDe: "Proprietarul", decisLa: "2026-11-01", sursaPlafon: "Sursa de test" },
   incadrare: { lamurita: true, raspuns: "Raspuns de test", data: "2026-11-01" },
@@ -51,6 +59,13 @@ describe("validarea continutului pentru publicare", () => {
     ["lista bancilor in ciorna", { ...bun, banci: { ...bun.banci, ciorna: true } }, "bancilor este marcata CIORNA"],
     ["lista bancilor fara sursa", { ...bun, banci: { ...bun.banci, sursa: null } }, "bancilor nu are sursa"],
     ["lista bancilor goala", { ...bun, banci: { ...bun.banci, banci: [] } }, "bancilor este goala"],
+    ["lista bancilor verificata in viitor", { ...bun, banci: { ...bun.banci, verificatLa: "2027-01-01" } }, "bancilor: data verificarii este in viitor"],
+    [
+      "aceeasi banca de doua ori",
+      { ...bun, banci: { ...bun.banci, banci: [...bun.banci.banci, { id: "a", nume: "Alt nume", schema: "fgdb" }] } },
+      "id-ul a apare de doua ori",
+    ],
+    ["banca fara nume", { ...bun, banci: { ...bun.banci, banci: [{ id: "c", nume: " ", schema: "fgdb" }] } }, "nu are id sau nume"],
     ["pas in ciorna", cuPas("girant", { ciorna: true }), "pasul girant: text marcat CIORNA"],
     ["pas fara sursa", cuPas("aur", { sursa: null }), "pasul aur: lipseste sursa"],
     ["pas fara data", cuPas("aur", { verificatLa: null }), "pasul aur: lipseste sursa sau data"],
@@ -73,6 +88,15 @@ describe("validarea continutului pentru publicare", () => {
     expect(gasite.some((p) => p.includes(fragment))).toBe(true);
   });
 
+  test("lista bancilor verificata acum mai mult de 12 luni opreste publicarea", () => {
+    const veche: Continut = { ...bun, banci: { ...bun.banci, verificatLa: "2026-06-01" } };
+    expect(probleme(veche, "2027-06-01")).toEqual([]);
+    expect(probleme(veche, "2027-06-02")).toEqual([
+      "parametru: plafonul a fost verificat acum mai mult de 12 luni",
+      "lista bancilor a fost verificata acum mai mult de 12 luni",
+    ]);
+  });
+
   test("un pas fara link trece daca are motivul scris, cu sau fara sursa", () => {
     expect(probleme(cuPas("ordine-in-acte", sfatGeneral))).toEqual([]);
     expect(probleme(cuPas("girant", { ...sfatGeneral, sursa: "Codul civil", verificatLa: "2026-11-01" }))).toEqual([]);
@@ -88,6 +112,7 @@ describe("validarea continutului pentru publicare", () => {
   test("plafonul verificat acum mai mult de 12 luni opreste publicarea", () => {
     expect(probleme(bun, "2027-06-01")).toEqual([]);
     expect(probleme(bun, "2027-06-02")).toEqual(["parametru: plafonul a fost verificat acum mai mult de 12 luni"]);
+    expect(probleme(bun, "2027-11-02")).toContain("lista bancilor a fost verificata acum mai mult de 12 luni");
   });
 
   test.each(FORMULARI_INTERZISE)("formularea „%s” este refuzata in pasii despre produse si valuta, cu sau fara diacritice", (formulare) => {

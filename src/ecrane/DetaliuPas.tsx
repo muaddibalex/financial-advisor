@@ -8,11 +8,13 @@ type Proprietati = {
   readonly pas: PasInPlan;
   /** Cifrele din raspunsurile omului care au dus la acest pas. Goala in forma generala. */
   readonly cifre: readonly string[];
+  /** Ce mai trebuie spus omului la acest pas, din raspunsurile lui. */
+  readonly note?: readonly string[];
   readonly onInapoi: () => void;
   readonly onBifeaza: (facut: boolean) => void;
 };
 
-export function DetaliuPas({ pas, cifre, onInapoi, onBifeaza }: Proprietati) {
+export function DetaliuPas({ pas, cifre, note = [], onInapoi, onBifeaza }: Proprietati) {
   const c = PASI[pas.id];
   return (
     <main class="ecran">
@@ -42,6 +44,11 @@ export function DetaliuPas({ pas, cifre, onInapoi, onBifeaza }: Proprietati) {
           ))}
         </ul>
       </div>
+      {note.map((nota) => (
+        <p class="caseta" role="note">
+          {nota}
+        </p>
+      ))}
       <p class="caseta atentie">{NU_ALEGE}</p>
       {c.link ? (
         <>

@@ -87,6 +87,18 @@ export function valideazaContinut(c: Continut, azi: string): readonly string[] {
   if (c.banci.ciorna) probleme.push("lista bancilor este marcata CIORNA");
   if (!areText(c.banci.sursa) || !esteData(c.banci.verificatLa)) probleme.push("lista bancilor nu are sursa sau data verificarii");
   if (c.banci.banci.length === 0) probleme.push("lista bancilor este goala");
+  if (esteData(c.banci.verificatLa)) {
+    if (c.banci.verificatLa > azi) probleme.push("lista bancilor: data verificarii este in viitor");
+    // O banca poate trece dintr-o grupa in alta sau isi poate schimba numele.
+    else if (plafonulEsteVechi(c.banci.verificatLa, azi)) probleme.push("lista bancilor a fost verificata acum mai mult de 12 luni");
+  }
+  const iduri = new Set<string>();
+  for (const banca of c.banci.banci) {
+    if (!areText(banca.id) || !areText(banca.nume)) probleme.push("lista bancilor: o banca nu are id sau nume");
+    if (iduri.has(banca.id)) probleme.push(`lista bancilor: id-ul ${banca.id} apare de doua ori`);
+    iduri.add(banca.id);
+    if (banca.schema !== "fgdb" && banca.schema !== "alt-stat-ue") probleme.push(`lista bancilor: ${banca.id} nu are schema de garantare`);
+  }
 
   for (const [id, pas] of Object.entries(c.pasi) as [IdPas, ContinutPas][]) {
     if (pas.ciorna) probleme.push(`pasul ${id}: text marcat CIORNA`);

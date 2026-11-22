@@ -10,7 +10,7 @@ import { AZI, baza, cursuriTest, parametriTest, suma } from "../fixturi/situatii
 
 afterEach(cleanup);
 
-const bancaExemplu = { fel: "lista", id: "exemplu-a" } as const;
+const bancaExemplu = { fel: "lista", id: "cec-bank" } as const;
 
 /** Porneste aplicatia cu o stocare in memorie, ca testele sa nu se atinga intre ele. */
 function porneste(optiuni: { stare?: StareSalvata; cursuri?: Cursuri | null; depozit?: Depozit | null; seIncarca?: boolean } = {}): Stocare {
@@ -57,7 +57,7 @@ describe("parcurgerea chestionarului", () => {
     apasa("+ Adăugați un loc");
     apasa(/^Cont/);
     scrie("Suma", "10 000");
-    fireEvent.change(screen.getByLabelText("La ce bancă?"), { target: { value: "exemplu-a" } });
+    fireEvent.change(screen.getByLabelText("La ce bancă?"), { target: { value: "cec-bank" } });
     apasa("Salvați");
     inainte();
 

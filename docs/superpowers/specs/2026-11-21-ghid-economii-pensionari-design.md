@@ -100,6 +100,7 @@ Reguli generale:
 - Pasii care trimit omul la o institutie au link oficial cu "ce sa cautati pe pagina", sursa si data verificarii: 1 (frauda), 7 (o singura banca) si 11 (produse neintelese).
 - Ceilalti unsprezece pasi sunt sfaturi de organizare sau nu au o pagina oficiala potrivita si raman fara link, fiecare cu motivul scris in fisierul de continut. Pe ecran, un astfel de pas spune deschis ca este un sfat general si ca nu vine dintr-o sursa oficiala. Daca un pas fara link se sprijina totusi pe o sursa (de exemplu o lege), sursa si data verificarii se noteaza. Pasul 8 (bani peste rezerva) este fara link, fiindca un link ar duce la pagina unui produs anume. Pasul 9 (alta moneda) este fara link, cu BNR notat ca sursa: vorbeste despre riscul schimbarii cursului, nu despre cursul de azi. (Schimbari decise de proprietar la 22.11.2026; initial fiecare pas avea link.)
 - Omul poate bifa un pas ca facut. Bifa este declaratia lui, nu o verificare.
+- Deasupra listei de pasi, planul arata un bloc "Ce am vazut in raspunsurile dumneavoastra": cate o constatare neutra pentru fiecare pas calculat, fara frauda (care ramane avertizarea de sus) si fara pasii in forma generala. Constatarile nu contin verdicte, sume sau indemnuri; ce poate face omul sta la fiecare pas. Blocul nu apare pe foaia tiparita. (Adaugat 22.11.2026, la cererea proprietarului: "variante pe care le poate urma".)
 
 ### Parametri de continut
 

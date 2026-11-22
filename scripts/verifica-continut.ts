@@ -16,11 +16,19 @@ try {
   const { INCADRARE_ASF } = await incarca<typeof import("../src/continut/incadrare.ts")>("/src/continut/incadrare.ts");
   const { PARAMETRI, PROVENIENTA_PARAMETRI } = await incarca<typeof import("../src/continut/parametri.ts")>("/src/continut/parametri.ts");
   const { PASI } = await incarca<typeof import("../src/continut/pasi.ts")>("/src/continut/pasi.ts");
+  const { CONSTATARI, CONSTATARI_IN_CIORNA } = await incarca<typeof import("../src/continut/constatari.ts")>("/src/continut/constatari.ts");
   const { valideazaContinut } = await incarca<typeof import("../src/continut/validare.ts")>("/src/continut/validare.ts");
 
   const azi = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Bucharest", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
   probleme = valideazaContinut(
-    { pasi: PASI, banci: BANCI, parametri: PARAMETRI, provenienta: PROVENIENTA_PARAMETRI, incadrare: INCADRARE_ASF },
+    {
+      pasi: PASI,
+      banci: BANCI,
+      parametri: PARAMETRI,
+      provenienta: PROVENIENTA_PARAMETRI,
+      incadrare: INCADRARE_ASF,
+      constatari: { texte: CONSTATARI, ciorna: CONSTATARI_IN_CIORNA },
+    },
     azi,
   );
 } finally {

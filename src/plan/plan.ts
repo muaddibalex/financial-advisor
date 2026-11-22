@@ -3,6 +3,7 @@
 
 import { formateazaSuma } from "../chestionar/suma";
 import { textSucursale, type BancaDinLista } from "../continut/banci";
+import { CONSTATARI } from "../continut/constatari";
 import { stareCursuri } from "../cursuri/vechime";
 import { baniAccesibili, numerarAcasa, rezervaTinta } from "../domeniu/marimi";
 import { calculeazaPasi } from "../domeniu/reguli";
@@ -105,6 +106,20 @@ export function notelePasului(pas: Pas, r: Raspunsuri, banci: readonly BancaDinL
   }
   const text = textSucursale(nume);
   return text === null ? [] : [text];
+}
+
+/** O constatare din blocul "Ce am vazut", pentru un pas anume. */
+export type Constatare = { readonly id: IdPas; readonly text: string };
+
+/**
+ * Constatarile din capul planului: cate una pentru fiecare pas calculat, fara
+ * frauda (care ramane avertizarea de sus), fara pasii in forma generala (care nu
+ * au putut fi socotiti, deci nu se afirma nimic despre ei) si fara pasii bifati.
+ */
+export function constatarile(plan: Plan): readonly Constatare[] {
+  return plan.pasi
+    .filter((p) => p.id !== "frauda" && p.forma === "calculata" && !p.facut)
+    .map((p) => ({ id: p.id, text: CONSTATARI[p.id] }));
 }
 
 /** "2026-11-21" -> "21.11.2026". */

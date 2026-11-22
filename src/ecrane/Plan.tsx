@@ -4,7 +4,7 @@
 import { numeleLunii } from "../chestionar/total";
 import { PASI } from "../continut/pasi";
 import type { Cursuri, IdPas } from "../domeniu/tipuri";
-import { dataRomaneasca, type Plan as PlanCalculat } from "../plan/plan";
+import { constatarile, dataRomaneasca, type Plan as PlanCalculat } from "../plan/plan";
 
 type Proprietati = {
   readonly plan: PlanCalculat;
@@ -109,6 +109,22 @@ function DeTiparit({ plan, azi, inCiorna }: { plan: PlanCalculat; azi: string; i
 }
 
 export function Plan({ plan, cursuri, azi, inCiorna, onDeschide, onSchimba, onTipareste }: Proprietati) {
+  const constatari = constatarile(plan);
+  const pasButon = (pas: PlanCalculat["pasi"][number]) => {
+    const c = PASI[pas.id];
+    const clasa = pas.numar === null ? "buton pas urgent" : pas.facut ? "buton pas facut" : "buton pas";
+    return (
+      <button type="button" class={clasa} key={pas.id} onClick={() => onDeschide(pas.id)}>
+        <span class="numar" aria-hidden="true">
+          {pas.numar ?? "!"}
+        </span>
+        <span>
+          {c.titlu}
+          <small>{pas.facut ? "Făcut" : c.peScurt}</small>
+        </span>
+      </button>
+    );
+  };
   return (
     <>
       <main class="ecran fara-tipar">
@@ -119,21 +135,20 @@ export function Plan({ plan, cursuri, azi, inCiorna, onDeschide, onSchimba, onTi
         <h1>{titlul(plan)}</h1>
         <p class="indiciu">{subTitlu(plan)}</p>
         <AvertizareCurs plan={plan} cursuri={cursuri} />
-        {plan.pasi.map((pas) => {
-          const c = PASI[pas.id];
-          const clasa = pas.numar === null ? "buton pas urgent" : pas.facut ? "buton pas facut" : "buton pas";
-          return (
-            <button type="button" class={clasa} onClick={() => onDeschide(pas.id)}>
-              <span class="numar" aria-hidden="true">
-                {pas.numar ?? "!"}
-              </span>
-              <span>
-                {c.titlu}
-                <small>{pas.facut ? "Făcut" : c.peScurt}</small>
-              </span>
-            </button>
-          );
-        })}
+        {/* Avertizarea de frauda ramane prima, deasupra blocului de constatari. */}
+        {plan.pasi.filter((pas) => pas.id === "frauda").map(pasButon)}
+        {constatari.length > 0 ? (
+          <section class="caseta constatari" aria-label="Ce am văzut în răspunsurile dumneavoastră">
+            <b>Ce am văzut în răspunsurile dumneavoastră</b>
+            <ul>
+              {constatari.map((c) => (
+                <li>{c.text}</li>
+              ))}
+            </ul>
+            <p class="indiciu">La fiecare pas de mai jos scrie ce puteți face. Hotărârea este a dumneavoastră.</p>
+          </section>
+        ) : null}
+        {plan.pasi.filter((pas) => pas.id !== "frauda").map(pasButon)}
         <div class="spatiu" />
         {plan.pasi.length > 0 ? (
           <button type="button" class="buton" onClick={onTipareste}>

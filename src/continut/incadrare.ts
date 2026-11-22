@@ -14,6 +14,11 @@
 // jos se pune inapoi pe false.
 //
 // Cat timp "lamurita" este false, verificarea de publicare refuza continutul.
+//
+// La final, planul arata un bloc "Ce am vazut in raspunsurile dumneavoastra"
+// (src/continut/constatari.ts): observatii neutre, fara verdicte, sume sau
+// indemnuri, si fara sa aleaga in locul omului. Premisa "nu recomanda" sta acum
+// alaturi de acest bloc.
 
 export type Incadrare = {
   readonly lamurita: boolean;

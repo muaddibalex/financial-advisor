@@ -2,15 +2,16 @@ import { cleanup, fireEvent, render, screen, within } from "@testing-library/pre
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { App } from "../../src/app";
 import { CONTINUT_IN_CIORNA, PASI } from "../../src/continut/pasi";
+import { CONSTATARI } from "../../src/continut/constatari";
 import { Plan } from "../../src/ecrane/Plan";
 import type { RezultatCursuri } from "../../src/cursuri/incarcare";
 import { ORDINEA_PASILOR } from "../../src/domeniu/reguli";
 import { LIPSA, type Cursuri, type Parametri, type Raspunsuri } from "../../src/domeniu/tipuri";
 import { BANCI, textSucursale } from "../../src/continut/banci";
-import { cifrelePasului, construiestePlan, dataRomaneasca, notelePasului } from "../../src/plan/plan";
+import { cifrelePasului, constatarile, construiestePlan, dataRomaneasca, notelePasului } from "../../src/plan/plan";
 import { PREFIX, creeazaStocare, depozitInMemorie, type Depozit, type Stocare } from "../../src/stocare/stocare";
 import type { StareSalvata } from "../../src/stocare/validare";
-import { AZI, baza, cursuriTest, parametriTest, suma } from "../fixturi/situatii";
+import { AZI, baza, cursuriTest, parametriTest, situatii, suma } from "../fixturi/situatii";
 
 afterEach(cleanup);
 
@@ -98,11 +99,11 @@ describe("starile planului", () => {
     expect(pasiiAfisati()).toEqual([]);
   });
 
-  test("cu toate textele aprobate, planul nu mai spune ca este o versiune de proba", async () => {
+  test("avertizarea „versiune de probă” apare exact când există conținut în ciornă", async () => {
     porneste({ raspunsuri: cuFrauda });
     await laPlan(/de făcut/);
-    expect(CONTINUT_IN_CIORNA).toBe(false);
-    expect(screen.queryByText(/Versiune de probă/)).toBeNull();
+    const apare = screen.queryAllByText(/Versiune de probă/).length > 0;
+    expect(apare).toBe(CONTINUT_IN_CIORNA);
   });
 
   test("un continut in ciorna este anuntat pe ecran si pe foaia tiparita", () => {
@@ -340,6 +341,69 @@ describe("sucursalele bancilor din alte state UE", () => {
     expect(BANCI.banci.some((b) => b.schema === "fgdb")).toBe(true);
     expect(BANCI.banci.some((b) => b.schema === "alt-stat-ue")).toBe(true);
     expect(new Set(BANCI.banci.map((b) => b.id)).size).toBe(BANCI.banci.length);
+  });
+});
+
+describe("blocul „Ce am văzut”", () => {
+  const titluBloc = "Ce am văzut în răspunsurile dumneavoastră";
+  const bloc = () => document.querySelector("section.constatari")?.textContent ?? "";
+
+  test("arată o constatare pentru fiecare pas calculat, fără fraudă", async () => {
+    porneste({ raspunsuri: { ...baza, girant: true, altaSituatie: true } });
+    await laPlan(/de făcut/);
+    expect(within(screen.getByRole("main")).getByText(titluBloc)).toBeTruthy();
+    expect(bloc()).toContain(CONSTATARI.girant);
+    expect(bloc()).toContain(CONSTATARI["situatie-neacoperita"]);
+  });
+
+  test("frauda nu apare în bloc, ci rămâne avertizarea de sus", async () => {
+    porneste({ raspunsuri: cuFrauda });
+    await laPlan(/de făcut/);
+    expect(bloc()).not.toContain(CONSTATARI.frauda);
+  });
+
+  test("un pas în formă generală nu produce constatare", () => {
+    const plan = construiestePlan(baza, cursuriTest, null, AZI, []);
+    const iduri = constatarile(plan).map((c) => c.id);
+    expect(iduri).not.toContain("o-singura-banca");
+    expect(iduri).not.toContain("bani-pentru-urgente");
+  });
+
+  test("constatările sunt mereu un subset al pașilor calculați, fără fraudă", () => {
+    for (const s of situatii) {
+      const cursuri = s.cursuri === undefined ? cursuriTest : s.cursuri;
+      const parametri = s.parametri === undefined ? parametriTest : s.parametri;
+      const plan = construiestePlan(s.raspunsuri, cursuri, parametri, s.azi ?? AZI, []);
+      const calc = new Set(plan.pasi.filter((p) => p.id !== "frauda" && p.forma === "calculata").map((p) => p.id));
+      for (const c of constatarile(plan)) expect(calc.has(c.id)).toBe(true);
+    }
+  });
+
+  test("plan gol: fără bloc", async () => {
+    porneste();
+    await laPlan(/niciun pas/);
+    expect(document.querySelector("section.constatari")).toBeNull();
+  });
+
+  test("blocul nu ajunge pe foaia tipărită", async () => {
+    porneste({ raspunsuri: { ...baza, girant: true } });
+    await laPlan(/de făcut/);
+    expect(deTiparit()).not.toContain(CONSTATARI.girant);
+  });
+
+  test("un pas bifat nu mai apare în bloc", async () => {
+    porneste({ raspunsuri: { ...baza, girant: true, altaSituatie: true }, pasiFacuti: ["girant"] });
+    await laPlan(/de făcut/);
+    expect(bloc()).not.toContain(CONSTATARI.girant);
+    expect(bloc()).toContain(CONSTATARI["situatie-neacoperita"]);
+  });
+
+  test("avertizarea de fraudă rămâne deasupra blocului", async () => {
+    porneste({ raspunsuri: cuFrauda });
+    await laPlan(/de făcut/);
+    const noduri = [...screen.getByRole("main").querySelectorAll(".buton.pas.urgent, section.constatari")];
+    expect(noduri[0]?.classList.contains("urgent")).toBe(true);
+    expect(noduri[1]?.matches("section.constatari")).toBe(true);
   });
 });
 

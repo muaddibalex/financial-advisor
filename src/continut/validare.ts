@@ -19,8 +19,15 @@ export type ProvenientaParametri = {
   readonly sursaPlafon: string;
 };
 
+/** Constatarile din blocul "Ce am vazut", cu starea lor de aprobare. */
+export type ConstatariContinut = {
+  readonly texte: Readonly<Record<IdPas, string>>;
+  readonly ciorna: boolean;
+};
+
 export type Continut = {
   readonly pasi: Readonly<Record<IdPas, ContinutPas>>;
+  readonly constatari: ConstatariContinut;
   readonly banci: ListaBanci;
   readonly parametri: Parametri | null;
   readonly provenienta: ProvenientaParametri | null;
@@ -123,6 +130,18 @@ export function valideazaContinut(c: Continut, azi: string): readonly string[] {
       for (const formulare of FORMULARI_INTERZISE) {
         if (text.includes(formulare)) probleme.push(`pasul ${id}: formulare de recomandare interzisa: "${formulare}"`);
       }
+    }
+  }
+
+  if (c.constatari.ciorna) probleme.push("constatarile sunt marcate CIORNA");
+  for (const [id, text] of Object.entries(c.constatari.texte) as [IdPas, string][]) {
+    if (!areText(text)) {
+      probleme.push(`constatarea pentru ${id} lipseste`);
+      continue;
+    }
+    const fara = faraDiacritice(text);
+    for (const formulare of FORMULARI_INTERZISE) {
+      if (fara.includes(formulare)) probleme.push(`constatarea pentru ${id}: formulare de recomandare interzisa: "${formulare}"`);
     }
   }
 

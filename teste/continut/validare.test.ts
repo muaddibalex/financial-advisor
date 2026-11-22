@@ -1,5 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { PASI, type ContinutPas } from "../../src/continut/pasi";
+import { CONSTATARI } from "../../src/continut/constatari";
 import { FORMULARI_INTERZISE, faraDiacritice, valideazaContinut, type Continut } from "../../src/continut/validare";
 import { ORDINEA_PASILOR } from "../../src/domeniu/reguli";
 import type { IdPas } from "../../src/domeniu/tipuri";
@@ -33,6 +34,7 @@ const bun: Continut = {
   parametri: parametriTest,
   provenienta: { decisDe: "Proprietarul", decisLa: "2026-11-01", sursaPlafon: "Sursa de test" },
   incadrare: { lamurita: true, raspuns: "Raspuns de test", data: "2026-11-01" },
+  constatari: { texte: CONSTATARI, ciorna: false },
 };
 
 /** Un sfat general, cum ar arata dupa aprobare: fara link si fara sursa, cu motivul scris. */
@@ -66,6 +68,13 @@ describe("validarea continutului pentru publicare", () => {
       "id-ul a apare de doua ori",
     ],
     ["banca fara nume", { ...bun, banci: { ...bun.banci, banci: [{ id: "c", nume: " ", schema: "fgdb" }] } }, "nu are id sau nume"],
+    ["constatari in ciorna", { ...bun, constatari: { ...bun.constatari, ciorna: true } }, "constatarile sunt marcate CIORNA"],
+    ["o constatare lipsa", { ...bun, constatari: { texte: { ...bun.constatari.texte, girant: "  " }, ciorna: false } }, "constatarea pentru girant"],
+    [
+      "formulare interzisa intr-o constatare",
+      { ...bun, constatari: { texte: { ...bun.constatari.texte, aur: "Vă recomandăm aur." }, ciorna: false } },
+      "constatarea pentru aur: formulare de recomandare interzisa",
+    ],
     ["pas in ciorna", cuPas("girant", { ciorna: true }), "pasul girant: text marcat CIORNA"],
     ["pas fara sursa", cuPas("aur", { sursa: null }), "pasul aur: lipseste sursa"],
     ["pas fara data", cuPas("aur", { verificatLa: null }), "pasul aur: lipseste sursa sau data"],

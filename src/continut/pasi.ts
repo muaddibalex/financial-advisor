@@ -16,6 +16,7 @@
 // dobanzi sau plafoane; fara indemnuri de a pune bani intr-un produs.
 
 import type { IdPas } from "../domeniu/tipuri";
+import { CONSTATARI_IN_CIORNA } from "./constatari";
 
 export type LinkOficial = {
   readonly eticheta: string;
@@ -252,4 +253,4 @@ export const PASI: Readonly<Record<IdPas, ContinutPas>> = {
 };
 
 /** Exista texte neverificate? Atunci aplicatia arata ca este o versiune de proba. */
-export const CONTINUT_IN_CIORNA: boolean = Object.values(PASI).some((p) => p.ciorna);
+export const CONTINUT_IN_CIORNA: boolean = Object.values(PASI).some((p) => p.ciorna) || CONSTATARI_IN_CIORNA;
